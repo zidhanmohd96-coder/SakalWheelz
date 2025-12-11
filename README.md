@@ -1,4 +1,4 @@
-## 🚗 Car Rental App – Flutter UI
+## 🚗 SakalWheels – Flutter UI
 
 ![Untitled](https://raw.githubusercontent.com/ales-dev-studio/car_rental_app/refs/heads/main/assets/images/Demo.jpg)
 
