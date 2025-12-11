@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "332266405888",
+    "project_id": "sakalwheelz",
+    "storage_bucket": "sakalwheelz.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332266405888:android:7efa35998c2d5403e858e5",
+        "android_client_info": {
+          "package_name": "com.car.rental.app.car_rental_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "332266405888-h0kkv68bjiojj4psj843s4847pt7c2le.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.car.rental.app.car_rental_app",
+            "certificate_hash": "df718ada81d86ddc509977ea79c9b0ac619c4d42"
+          }
+        },
+        {
+          "client_id": "332266405888-gdp92g5nffv22jdpkcaavmbgqg9aoush.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcR6HSFMNjAZexvRShDkSVxquGbrbvaJ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "332266405888-gdp92g5nffv22jdpkcaavmbgqg9aoush.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "332266405888-mpg4l4ojt4298bam6m6cte50hqkd8bhd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.car.rental.app.carRentalApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
