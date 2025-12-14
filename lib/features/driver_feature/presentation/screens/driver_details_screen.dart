@@ -1,16 +1,14 @@
-import 'package:car_rental_app/core/gen/assets.gen.dart'; // Make sure you have driver assets
+import 'package:car_rental_app/core/gen/assets.gen.dart';
 import 'package:car_rental_app/core/theme/colors.dart';
 import 'package:car_rental_app/core/theme/dimens.dart';
 import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_scaffold.dart';
 import 'package:car_rental_app/core/widgets/app_space.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
-// You might need to create a DriverDetailsAppBar or reuse the existing one
 import 'package:car_rental_app/features/car_feature/presentation/widgets/cars_details_app_bar.dart';
 import 'package:car_rental_app/features/car_feature/presentation/widgets/car_spec_widget.dart';
 import 'package:car_rental_app/features/car_feature/presentation/widgets/price_widget.dart';
 import 'package:car_rental_app/features/car_feature/presentation/widgets/rate_widget.dart';
-import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
 import 'package:flutter/material.dart';
 
 class DriverDetailsScreen extends StatelessWidget {
@@ -18,20 +16,23 @@ class DriverDetailsScreen extends StatelessWidget {
 
   const DriverDetailsScreen({super.key, required this.driver});
 
+  // Helper method for description
+  String driverDescriptionTemplate(String name, String cat, String exp) {
+    return "$name is a highly rated $cat driver with over $exp of experience. Verified for safety and reliability, ensuring a smooth journey for you.";
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Safely cast languages, defaulting to empty list if null
     final List<String> languages = (driver['languages'] as List<String>?) ?? [];
 
     return AppScaffold(
-      // You can rename CarsDetailsAppBar to CommonDetailsAppBar later
       appBar: const CarsDetailsAppBar(),
       padding: EdgeInsets.zero,
       body: SingleChildScrollView(
         child: Column(
           spacing: Dimens.largePadding,
           children: [
-            // 1. Driver Image Section (Replaces App3dViewerWidget)
+            // 1. Driver Image Section
             _buildDriverImage(driver['image']),
 
             Padding(
@@ -42,7 +43,7 @@ class DriverDetailsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: Dimens.largePadding,
                 children: [
-                  // 2. Driver Name & Description
+                  // 2. Name
                   Center(
                     child: AppTitleText(
                       driver['name'] ?? 'Driver Name',
@@ -50,6 +51,8 @@ class DriverDetailsScreen extends StatelessWidget {
                       color: AppColors.primaryColor,
                     ),
                   ),
+
+                  // 3. About
                   const AppTitleText(
                     'About the Driver',
                     fontSize: 16.0,
@@ -64,11 +67,12 @@ class DriverDetailsScreen extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 15,
                       color: AppColors.whiteColor,
+                      height: 1.5,
                     ),
                   ),
                   const Divider(color: Colors.white24),
 
-// 3. Title & Rating Row
+                  // 4. Rating Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -84,55 +88,44 @@ class DriverDetailsScreen extends StatelessWidget {
                     ],
                   ),
 
-// 4. Specs Row (Experience, Category, etc.)
+// 5. Specs Row
                   Builder(
                     builder: (context) {
                       // Logic to determine the correct category icon
-// Assuming driver['category'] contains strings like 'Heavy', 'Tourist', or 'Taxi'
-                      String categoryIconPath;
                       final String category =
                           (driver['category'] ?? '').toString().toLowerCase();
+                      final String categoryIconPath;
 
                       if (category.contains('heavy')) {
                         categoryIconPath = Assets.images.heavyIcon.path;
                       } else if (category.contains('tourist')) {
                         categoryIconPath = Assets.images.touristIcon.path;
                       } else {
-                        // Default to taxi if valid or unknown
                         categoryIconPath = Assets.images.taxiIcon.path;
                       }
 
-                      return // 4. Specs Row (Experience, Category, Verified)
-                          Container(
+                      return Container(
                         padding: const EdgeInsets.symmetric(
                             vertical: 16, horizontal: 12),
                         decoration: BoxDecoration(
-                          color: AppColors.cardColor, // Subtle background color
+                          color: AppColors.cardColor,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppColors.primaryColor),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // 1. Experience
                             CarSpecWidget(
-                              // Using steering wheel for experience (Skills)
                               imagePath: Assets.images.experienceIcon.path,
                               title: 'Experience',
                               value: driver['experience'] ?? 'N/A',
                             ),
-
-                            // 2. Category (Dynamic Icon)
                             CarSpecWidget(
-                              // Uses the logic defined above to pick Heavy, Tourist, or Taxi
                               imagePath: categoryIconPath,
                               title: 'Category',
                               value: driver['category'] ?? 'Taxi',
                             ),
-
-                            // 3. Verified Status
                             CarSpecWidget(
-                              // Explicit verified checkmark icon
                               imagePath: Assets.images.verifiedIcon.path,
                               title: 'Verified',
                               value: 'Yes',
@@ -145,11 +138,8 @@ class DriverDetailsScreen extends StatelessWidget {
 
                   const Divider(color: Colors.white24),
 
-                  // 5. NEW: Languages Section
-                  const AppTitleText(
-                    'Languages Spoken',
-                    fontSize: 14.0,
-                  ),
+// 6. Languages
+                  const AppTitleText('Languages Spoken', fontSize: 14.0),
                   Wrap(
                     spacing: 8.0,
                     runSpacing: 8.0,
@@ -166,36 +156,29 @@ class DriverDetailsScreen extends StatelessWidget {
                     }).toList(),
                   ),
 
-                  const AppVSpace(
-                    space: 150.0,
-                  ),
+                  const AppVSpace(space: 150.0),
                 ],
               ),
             ),
           ],
         ),
       ),
-
-      // 6. Bottom Sheet (Price & Book)
       bottomSheet: Container(
         height: 137,
         decoration: BoxDecoration(
           color: AppColors.cardColor,
-          borderRadius: BorderRadius.circular(
-            Dimens.corners * 2,
-          ),
+          borderRadius: BorderRadius.circular(Dimens.corners * 2),
         ),
         margin: const EdgeInsets.all(Dimens.largePadding),
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(
-                Dimens.largePadding,
-              ),
+              padding: const EdgeInsets.all(Dimens.largePadding),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Daily Rate'),
+                  const Text('Daily Rate',
+                      style: TextStyle(color: Colors.white)),
                   PriceWidget(price: (driver['price'] as num).toDouble()),
                 ],
               ),
@@ -203,7 +186,8 @@ class DriverDetailsScreen extends StatelessWidget {
             AppButton(
                 title: 'Hire Driver',
                 onPressed: () {
-                  // Add booking logic here
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Booking Request Sent!")));
                 }),
           ],
         ),
@@ -211,7 +195,9 @@ class DriverDetailsScreen extends StatelessWidget {
     );
   }
 
+  // --- Fixed Image Builder ---
   // Helper widget to render the image nicely
+
   Widget _buildDriverImage(String imageUrl) {
     return Container(
         padding: const EdgeInsets.all(4),

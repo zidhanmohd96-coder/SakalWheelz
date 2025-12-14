@@ -1,4 +1,5 @@
 import 'package:car_rental_app/core/theme/colors.dart';
+import 'package:car_rental_app/core/widgets/app_title_text.dart';
 import 'package:car_rental_app/features/driver_feature/presentation/screens/driver_details_screen.dart';
 import 'package:car_rental_app/features/home_feature/presentation/widgets/car_card.dart';
 import 'package:flutter/material.dart';
@@ -363,79 +364,91 @@ class _SearchTabState extends State<SearchTab> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // ---------------- 1. SEARCH BAR & FILTER ----------------
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _runSearch,
-                    decoration: InputDecoration(
-                      hintText: _selectedType == SearchType.vehicle
-                          ? "Search cars..."
-                          : "Search drivers...",
-                      filled: true,
-                      fillColor: AppColors.cardColor,
-                      prefixIcon:
-                          const Icon(Icons.search, color: AppColors.grayColor),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                InkWell(
-                  onTap: _showFilterBottomSheet,
-                  child: Container(
-                    height: 50,
-                    width: 50,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.tune, color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // ---------------- 2. TYPE SELECTOR (VEHICLE / DRIVER) ----------------
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: AppColors.cardColor, // Light background for toggle
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primaryColor),
+        child: Scaffold(
+            backgroundColor: AppColors.backgroundColor,
+            appBar: AppBar(
+              backgroundColor: AppColors.backgroundColor,
+              elevation: 0,
+              scrolledUnderElevation: 0, // 🔥 IMPORTANT
+              surfaceTintColor: Colors.transparent,
+              title: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: AppTitleText('Search Vehicles', fontSize: 28),
               ),
-              child: Row(
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  _buildTypeButton("Vehicles", SearchType.vehicle),
-                  _buildTypeButton("Drivers", SearchType.driver),
+                  // ---------------- 1. SEARCH BAR & FILTER ----------------
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: _runSearch,
+                          decoration: InputDecoration(
+                            hintText: _selectedType == SearchType.vehicle
+                                ? "Search cars..."
+                                : "Search drivers...",
+                            filled: true,
+                            fillColor: AppColors.cardColor,
+                            prefixIcon: const Icon(Icons.search,
+                                color: AppColors.grayColor),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      InkWell(
+                        onTap: _showFilterBottomSheet,
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.tune, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ---------------- 2. TYPE SELECTOR (VEHICLE / DRIVER) ----------------
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardColor, // Light background for toggle
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.primaryColor),
+                    ),
+                    child: Row(
+                      children: [
+                        _buildTypeButton("Vehicles", SearchType.vehicle),
+                        _buildTypeButton("Drivers", SearchType.driver),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ---------------- 3. RESULTS LIST ----------------
+                  Expanded(
+                    child: _selectedType == SearchType.vehicle
+                        ? _buildCarList()
+                        : _buildDriverList(),
+                  ),
                 ],
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ---------------- 3. RESULTS LIST ----------------
-            Expanded(
-              child: _selectedType == SearchType.vehicle
-                  ? _buildCarList()
-                  : _buildDriverList(),
-            ),
-          ],
-        ),
-      ),
-    );
+            )));
   }
 
   Widget _buildTypeButton(String title, SearchType type) {
