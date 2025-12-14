@@ -12,47 +12,66 @@ import 'package:car_rental_app/features/home_feature/presentation/widgets/tabs/s
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  final int initialIndex;
 
+  // Ensure default is 0
+  const HomeScreen({super.key, this.initialIndex = 0});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<BottomNavigationCubit>(
-      create: (context) => BottomNavigationCubit(),
-      child: const _HomeScreen(),
+      // FIX: Initialize the Cubit and immediately update it with the passed index
+      create: (context) =>
+          BottomNavigationCubit()..onItemTap(index: widget.initialIndex),
+      child: const _HomeScreenContent(),
     );
   }
 }
 
-class _HomeScreen extends StatelessWidget {
-  const _HomeScreen();
+class _HomeScreenContent extends StatelessWidget {
+  const _HomeScreenContent();
 
   @override
   Widget build(BuildContext context) {
-    final watch = context.watch<BottomNavigationCubit>();
+    // Watch state to update UI
+    final state = context.watch<BottomNavigationCubit>().state;
+    // Read cubit to trigger events
     final read = context.read<BottomNavigationCubit>();
 
     final List<Widget> tabs = [
       const HomeTab(),
       const SearchTab(),
-      const BookingsTab(),
+      const BookingTab(), // Make sure this is const or remove const if it has params
       const ChatTab(),
       const ProfileTab(),
     ];
 
+    // Safety check: Ensure index doesn't go out of bounds
+    final int safeIndex =
+        state.selectedIndex >= tabs.length ? 0 : state.selectedIndex;
+
     return Scaffold(
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(80.0),
-        child: MainAppBar(),
-      ),
-      body: tabs[watch.state.selectedIndex],
+      // Only show MainAppBar on Home Tab
+      appBar: safeIndex == 0
+          ? const PreferredSize(
+              preferredSize: Size.fromHeight(80.0),
+              child: MainAppBar(),
+            )
+          : null,
+      body: tabs[safeIndex],
       bottomNavigationBar: ColoredBox(
-        color: AppColors.backgroundColor,
+        color: Colors.transparent,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(Dimens.corners * 2),
           child: BottomNavigationBar(
-            backgroundColor: AppColors.cardColor,
-            currentIndex: watch.state.selectedIndex,
+            backgroundColor: AppColors.cardColor.withOpacity(0.8),
+            currentIndex: safeIndex,
             onTap: (final int index) {
               read.onItemTap(index: index);
             },
@@ -61,82 +80,38 @@ class _HomeScreen extends StatelessWidget {
             unselectedItemColor: AppColors.whiteColor,
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                icon: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: Dimens.largePadding,
-                  ),
-                  child: AppSvgViewer(
-                    Assets.icons.home,
-                    color: watch.state.selectedIndex == 0
-                        ? AppColors.primaryColor
-                        : AppColors.whiteColor,
-                  ),
-                ),
+                icon: _buildIcon(Assets.icons.home, safeIndex == 0),
                 label: 'Home',
               ),
               BottomNavigationBarItem(
-                icon: Padding(
-                  padding: const EdgeInsets.only(
-                    top: Dimens.padding,
-                    bottom: Dimens.largePadding,
-                  ),
-                  child: AppSvgViewer(
-                    Assets.icons.search,
-                    color: watch.state.selectedIndex == 1
-                        ? AppColors.primaryColor
-                        : AppColors.whiteColor,
-                  ),
-                ),
+                icon: _buildIcon(Assets.icons.search, safeIndex == 1),
                 label: 'Search',
               ),
               BottomNavigationBarItem(
-                icon: Padding(
-                  padding: const EdgeInsets.only(
-                    top: Dimens.padding,
-                    bottom: Dimens.largePadding,
-                  ),
-                  child: AppSvgViewer(
-                    Assets.icons.calendar,
-                    color: watch.state.selectedIndex == 2
-                        ? AppColors.primaryColor
-                        : AppColors.whiteColor,
-                  ),
-                ),
+                icon: _buildIcon(Assets.icons.calendar, safeIndex == 2),
                 label: 'Bookings',
               ),
               BottomNavigationBarItem(
-                icon: Padding(
-                  padding: const EdgeInsets.only(
-                    top: Dimens.padding,
-                    bottom: Dimens.largePadding,
-                  ),
-                  child: AppSvgViewer(
-                    Assets.icons.mail,
-                    color: watch.state.selectedIndex == 3
-                        ? AppColors.primaryColor
-                        : AppColors.whiteColor,
-                  ),
-                ),
+                icon: _buildIcon(Assets.icons.mail, safeIndex == 3),
                 label: 'Chat',
               ),
               BottomNavigationBarItem(
-                icon: Padding(
-                  padding: const EdgeInsets.only(
-                    top: Dimens.padding,
-                    bottom: Dimens.largePadding,
-                  ),
-                  child: AppSvgViewer(
-                    Assets.icons.user,
-                    color: watch.state.selectedIndex == 4
-                        ? AppColors.primaryColor
-                        : AppColors.whiteColor,
-                  ),
-                ),
+                icon: _buildIcon(Assets.icons.user, safeIndex == 4),
                 label: 'Profile',
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildIcon(String assetPath, bool isSelected) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Dimens.padding),
+      child: AppSvgViewer(
+        assetPath,
+        color: isSelected ? AppColors.primaryColor : AppColors.whiteColor,
       ),
     );
   }

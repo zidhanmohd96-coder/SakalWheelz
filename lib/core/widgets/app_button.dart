@@ -65,12 +65,16 @@ class AppButton extends StatelessWidget {
               ),
               const AppHSpace(),
             ],
-            Text(
-              title,
-              style: const TextStyle(
-                fontFamily: FontFamily.poppinsMedium,
-                color: AppColors.whiteColor,
-                fontSize: 16.0,
+            Flexible(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontFamily: FontFamily.poppinsMedium,
+                  color: AppColors.whiteColor,
+                  fontSize: 16.0,
+                ),
+                overflow: TextOverflow.ellipsis, // Adds '...' at the end
+                maxLines: 1,
               ),
             ),
           ],

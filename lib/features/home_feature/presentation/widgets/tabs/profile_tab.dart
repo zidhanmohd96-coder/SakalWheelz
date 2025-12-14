@@ -3,6 +3,8 @@ import 'package:car_rental_app/features/home_feature/presentation/screens/featur
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/feedback_screen.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/my_documents_screen.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/settings_screen.dart';
+import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/become_host_screen.dart';
+import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/become_driver_screen.dart';
 import 'package:car_rental_app/features/onboarding_feature/presentation/screen/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,89 +30,107 @@ class ProfileTab extends StatelessWidget {
 
               const SizedBox(height: 30),
 
+              // --- NEW: START EARNING SECTION (Inspired by Screenshot) ---
               const Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  "Account Settings",
-                  style: TextStyle(
-                    color: AppColors.whiteColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: Text("Start Earning",
+                    style: TextStyle(
+                        color: AppColors.whiteColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
               ),
-
               const SizedBox(height: 15),
 
-              // ✅ NAVIGATION LOGIC IS HERE (Inside build)
-              _buildMenuCard(
-                icon: Icons.person_outline,
-                title: "Edit Profile",
-                onTap: () {
-                  // context is available here because we are inside build()
-                  Navigator.push(
+              // HOST CARD
+              _buildEarningCard(
+                context,
+                title: "Host",
+                subtitle: "List your vehicles and earn money",
+                icon: Icons.business,
+                features: [
+                  "List unlimited vehicles",
+                  "Set your own prices",
+                  "Digital agreements"
+                ],
+                btnText: "List Your Car",
+                color: Colors.blueAccent,
+                onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const EditProfileScreen()),
-                  );
-                },
+                        builder: (c) => const BecomeHostScreen())),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
 
-              const SizedBox(height: 10),
+              // DRIVER CARD
+              _buildEarningCard(
+                context,
+                title: "Driver",
+                subtitle: "Offer your driving services",
+                icon: Icons.work_outline,
+                features: [
+                  "Accept ride requests",
+                  "Flexible working hours",
+                  "Instant payouts"
+                ],
+                btnText: "Register as Driver",
+                color: AppColors.primaryColor,
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (c) => const BecomeDriverScreen())),
+              ),
+              const SizedBox(height: 30),
+              // ---------------------------------------------------------
 
-// 2. NEW: My Documents
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Account Settings",
+                    style: TextStyle(
+                        color: AppColors.whiteColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 15),
+
               _buildMenuCard(
-                icon: Icons.assignment_ind_outlined, // ID Card Icon
-                title: "My Documents",
-                onTap: () {
-                  Navigator.push(
+                  icon: Icons.person_outline,
+                  title: "Edit Profile",
+                  onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (c) => const MyDocumentsScreen()));
-                },
-              ),
+                          builder: (c) => const EditProfileScreen()))),
               const SizedBox(height: 10),
-
-              // 3. NEW: Settings
               _buildMenuCard(
-                icon: Icons.settings_outlined,
-                title: "Settings",
-                onTap: () {
-                  Navigator.push(
+                  icon: Icons.assignment_ind_outlined,
+                  title: "My Documents",
+                  onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (c) => const SettingsScreen()));
-                },
-              ),
+                          builder: (c) => const MyDocumentsScreen()))),
               const SizedBox(height: 10),
-
-// 4. NEW: Feedback
               _buildMenuCard(
-                icon: Icons.mail_outline,
-                title: "Feedback",
-                onTap: () {
-                  Navigator.push(
+                  icon: Icons.settings_outlined,
+                  title: "Settings",
+                  onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (c) => const FeedbackScreen()));
-                },
-              ),
+                          builder: (c) => const SettingsScreen()))),
               const SizedBox(height: 10),
-
-// 5. NEW: FAQ
               _buildMenuCard(
-                icon: Icons.help_outline,
-                title: "FAQ",
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (c) => const FAQScreen()));
-                },
-              ),
+                  icon: Icons.mail_outline,
+                  title: "Feedback",
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (c) => const FeedbackScreen()))),
               const SizedBox(height: 10),
-
-              // We pass context to this helper method so it can show the dialog
+              _buildMenuCard(
+                  icon: Icons.help_outline,
+                  title: "FAQ",
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (c) => const FAQScreen()))),
+              const SizedBox(height: 10),
               _buildLogoutButton(context),
             ],
           ),
@@ -119,187 +139,161 @@ class ProfileTab extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(User? user) {
-    if (user == null) return const SizedBox();
+  Widget _buildEarningCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required List<String> features,
+    required String btnText,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12)),
+                child: Icon(icon, color: color, size: 28),
+              ),
+              const SizedBox(width: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                  Text(subtitle,
+                      style:
+                          TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                ],
+              )
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...features.map((f) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle_outline, color: color, size: 16),
+                    const SizedBox(width: 8),
+                    Text(f,
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 13)),
+                  ],
+                ),
+              )),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: onTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(btnText,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  // ... (Keep existing _buildProfileHeader, _buildMenuCard, _buildLogoutButton)
+  Widget _buildProfileHeader(User? user) {
+    /* Copy previous code */
+    if (user == null) return const SizedBox();
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryColor));
-        }
-
-        String displayName = "Sakal User";
-        String emailOrPhone = user.email ?? user.phoneNumber ?? "";
+        String displayName = "User";
+        String emailOrPhone = user.email ?? "";
         String? photoUrl = user.photoURL;
-
-        if (snapshot.hasData &&
-            snapshot.data != null &&
-            snapshot.data!.exists) {
+        if (snapshot.hasData && snapshot.data!.exists) {
           final data = snapshot.data!.data() as Map<String, dynamic>;
-          if (data.containsKey('full_name')) {
-            displayName = data['full_name'];
-          }
-          if (data.containsKey('profile_pic') && data['profile_pic'] != "") {
-            photoUrl = data['profile_pic'];
-          }
+          displayName = data['full_name'] ?? displayName;
+          photoUrl = data['profile_pic'] ?? photoUrl;
         }
-
         return Column(
           children: [
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primaryColor, width: 3),
-              ),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primaryColor, width: 2)),
               child: CircleAvatar(
-                radius: 60,
-                backgroundColor:
-                    AppColors.veryLightPrimaryColor.withOpacity(0.3),
-                backgroundImage:
-                    photoUrl != null ? NetworkImage(photoUrl) : null,
-                child: photoUrl == null
-                    ? const Icon(Icons.person,
-                        size: 60, color: AppColors.primaryColor)
-                    : null,
-              ),
+                  radius: 50,
+                  backgroundImage:
+                      photoUrl != null ? NetworkImage(photoUrl) : null,
+                  child: photoUrl == null
+                      ? const Icon(Icons.person, size: 50)
+                      : null),
             ),
-            const SizedBox(height: 16),
-            Text(
-              displayName,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.whiteColor,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              emailOrPhone,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.grayColor,
-              ),
-            ),
+            const SizedBox(height: 12),
+            Text(displayName,
+                style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+            Text(emailOrPhone,
+                style: const TextStyle(fontSize: 14, color: Colors.grey)),
           ],
         );
       },
     );
   }
 
-  // ✅ This method does NOT need context because it only sets up the UI
-  // The 'onTap' logic is passed from the build method
-  Widget _buildMenuCard({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: AppColors.primaryColor),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-              fontWeight: FontWeight.w300, color: AppColors.whiteColor),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios,
-            size: 14, color: AppColors.grayColor),
-        onTap: onTap,
-      ),
+  Widget _buildMenuCard(
+      {required IconData icon,
+      required String title,
+      required VoidCallback onTap}) {
+    return ListTile(
+      tileColor: AppColors.cardColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      leading: Icon(icon, color: AppColors.primaryColor),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      trailing:
+          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+      onTap: onTap,
     );
   }
 
-  // ✅ This method REQUIRES context to show the dialog, so we pass it in
   Widget _buildLogoutButton(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.logout, color: Colors.red),
-        ),
-        title: const Text(
-          "Logout",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-        ),
-        onTap: () => _showLogoutDialog(context),
-      ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Logout"),
-        content: const Text("Are you sure you want to log out?"),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await AuthService.signOut();
-
-              // Check if context is still valid before using it
-              if (context.mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const OnboardingScreen()),
-                  (route) => false,
-                );
-              }
-            },
-            child: const Text("Logout"),
-          ),
-        ],
-      ),
+    return ListTile(
+      tileColor: AppColors.cardColor,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.red.withOpacity(0.2))),
+      leading: const Icon(Icons.logout, color: Colors.red),
+      title: const Text("Logout",
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+      onTap: () => AuthService.signOut().then((_) =>
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+              (r) => false)),
     );
   }
 }

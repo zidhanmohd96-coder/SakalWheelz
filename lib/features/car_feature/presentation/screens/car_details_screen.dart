@@ -314,11 +314,11 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
           AppButton(
               title: 'Book Now',
               onPressed: () {
+                // 1. Push to Booking Screen and pass the 'carData'
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        BookingScreen(carData: car), // Pass the car data!
+                    builder: (context) => BookingScreen(carData: car),
                   ),
                 );
               }),

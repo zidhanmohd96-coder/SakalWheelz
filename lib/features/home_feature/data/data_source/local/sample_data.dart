@@ -1,4 +1,5 @@
 import 'package:car_rental_app/core/gen/assets.gen.dart';
+import 'package:flutter/material.dart';
 
 // --- Consolidated Data Model for UI ---
 final List<Map<String, dynamic>> carsList = [
@@ -249,3 +250,59 @@ String driverDescriptionTemplate(
     String name, String category, String experience) {
   return "Professional $name, a skilled $category driver with $experience of road experience. Known for exceptional driving skills, punctuality, and customer satisfaction. Book now to experience a safe and comfortable journey with $name!";
 }
+
+// --- BOOKING MODEL & DATA ---
+
+class BookingModel {
+  final String id;
+  final Map<String, dynamic> car;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String status;
+  final double totalPrice;
+
+  BookingModel({
+    required this.id,
+    required this.car,
+    required this.startDate,
+    required this.endDate,
+    required this.status,
+    required this.totalPrice,
+  });
+}
+
+// Global list acts as our database
+List<BookingModel> myBookings = [
+  // ... any initial mock data ...
+];
+
+// --- CHAT MODEL & DATA ---
+
+class ChatModel {
+  final String id;
+  final String name;
+  final String image;
+  final String role; // 'Host' or 'Driver'
+  final bool isOnline;
+
+  // Mutable fields (Can change)
+  List<Map<String, dynamic>> messages;
+  int unreadCount;
+  DateTime lastMessageTime;
+  String lastMessageText;
+
+  ChatModel({
+    required this.id,
+    required this.name,
+    required this.image,
+    required this.role,
+    this.isOnline = false,
+    required this.messages,
+    this.unreadCount = 0,
+    required this.lastMessageTime,
+    required this.lastMessageText,
+  });
+}
+
+// Global Chat List (Acts as Database)
+List<ChatModel> myChats = [];

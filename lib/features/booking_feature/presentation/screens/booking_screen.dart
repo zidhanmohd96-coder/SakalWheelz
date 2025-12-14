@@ -4,6 +4,8 @@ import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_scaffold.dart';
 import 'package:car_rental_app/core/widgets/app_space.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
+import 'package:car_rental_app/features/booking_feature/presentation/screens/booking_success_screen.dart';
+import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart'; // Ensure sampleDrivers is here
 import 'package:flutter/material.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -16,34 +18,60 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  // State Variables
-  DateTime _focusedDay = DateTime.now();
+  // --- STATE VARIABLES ---
+
+  // Calendar State
+  DateTime _focusedMonth = DateTime.now();
   DateTime? _startDate;
   DateTime? _endDate;
-  bool _isWithDriver = false;
-  String _pickupTime = "10:00 AM";
+  final List<int> _bookedDays = [5, 6, 12, 18, 19, 20]; // Mock booked days
 
-  // Mock "Booked" dates to simulate real-world availability
-  final List<int> _bookedDays = [5, 6, 12, 18, 19, 20];
+  // Driver State
+  bool _isWithDriver = false;
+  Map<String, dynamic>? _selectedDriver;
+
+  // Time State
+  TimeOfDay _pickupTime = const TimeOfDay(hour: 10, minute: 0);
+  TimeOfDay _dropoffTime = const TimeOfDay(hour: 10, minute: 0);
+
+  // Location State
+  String _pickupLocation = "Kochi International Airport";
+  String _dropoffLocation = "Lulu Mall, Edappally";
+
+  // Available Locations for Dropdown
+  final List<String> _keralaLocations = [
+    "Kochi International Airport",
+    "Lulu Mall, Edappally",
+    "Technopark, Trivandrum",
+    "Calicut Beach",
+    "Munnar Town",
+    "Alleppey Houseboat Terminal",
+    "Varkala Cliff",
+    "MG Road, Kochi"
+  ];
 
   @override
   Widget build(BuildContext context) {
-    // Calculate Total Price
-    // Default to 1 day if no range selected
+    // --- Calculations ---
     int rentalDays = 1;
     if (_startDate != null && _endDate != null) {
       rentalDays = _endDate!.difference(_startDate!).inDays + 1;
     }
 
-    // Base Price
     double basePrice = (widget.carData['price'] is int)
         ? (widget.carData['price'] as int).toDouble()
         : (widget.carData['price'] as double);
 
-    // Driver Cost ($50 per day extra)
-    double driverCost = _isWithDriver ? (50.0 * rentalDays) : 0.0;
+    // Driver Cost (Use selected driver price or default $50 if none selected yet)
+    double driverDailyPrice = _selectedDriver != null
+        ? (_selectedDriver!['price'] is int
+            ? (_selectedDriver!['price'] as int).toDouble()
+            : _selectedDriver!['price'])
+        : 50.0;
 
-    double totalPrice = (basePrice * rentalDays) + driverCost;
+    double driverTotalCost =
+        _isWithDriver ? (driverDailyPrice * rentalDays) : 0.0;
+    double totalTripPrice = (basePrice * rentalDays) + driverTotalCost;
 
     return AppScaffold(
       appBar: AppBar(
@@ -63,11 +91,11 @@ class _BookingScreenState extends State<BookingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. CAR SUMMARY CARD
+              // 1. Car Summary
               _buildCarSummaryCard(),
               const AppVSpace(space: Dimens.largePadding),
 
-              // 2. CALENDAR SECTION
+              // 2. Calendar
               const AppTitleText("Select Dates", fontSize: 18),
               const SizedBox(height: 12),
               _buildCustomCalendar(),
@@ -76,34 +104,69 @@ class _BookingScreenState extends State<BookingScreen> {
 
               const AppVSpace(space: Dimens.largePadding),
 
-              // 3. RENTAL OPTIONS (Driver / Time)
-              const AppTitleText("Rental Options", fontSize: 18),
-              const SizedBox(height: 16),
-              _buildRentalOptions(),
+              // 3. Driver Selection
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const AppTitleText("Driver Required?", fontSize: 18),
+                  Switch(
+                    value: _isWithDriver,
+                    activeThumbColor: AppColors.primaryColor,
+                    onChanged: (val) {
+                      setState(() {
+                        _isWithDriver = val;
+                        if (!val) _selectedDriver = null; // Clear if turned off
+                      });
+                    },
+                  ),
+                ],
+              ),
+              if (_isWithDriver) ...[
+                const SizedBox(height: 12),
+                _buildDriverSelector(),
+              ],
 
               const AppVSpace(space: Dimens.largePadding),
 
-              // 4. LOCATIONS
+              // 4. Time Selection
+              const AppTitleText("Time Schedule", fontSize: 18),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                      child: _buildTimePickerBox(
+                          "Pickup Time", _pickupTime, true)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                      child: _buildTimePickerBox(
+                          "Drop-off Time", _dropoffTime, false)),
+                ],
+              ),
+
+              const AppVSpace(space: Dimens.largePadding),
+
+              // 5. Locations
               const AppTitleText("Location Details", fontSize: 18),
               const SizedBox(height: 16),
-              _buildLocationInput("Pickup Location", Icons.my_location,
-                  "Kochi International Airport"),
+              _buildLocationInput(
+                  "Pickup Location", Icons.my_location, _pickupLocation, true),
               const SizedBox(height: 12),
               _buildLocationInput("Drop-off Location",
-                  Icons.location_on_outlined, "Lulu Mall, Edappally"),
+                  Icons.location_on_outlined, _dropoffLocation, false),
 
-              const AppVSpace(space: 100), // Bottom padding for button
+              const AppVSpace(space: 160), // Bottom padding
             ],
           ),
         ),
       ),
-      bottomSheet: _buildBottomPaymentBar(totalPrice, rentalDays),
+      bottomSheet: _buildBottomPaymentBar(totalTripPrice, rentalDays),
     );
   }
 
   // --- WIDGETS ---
 
   Widget _buildCarSummaryCard() {
+    // Same as before
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -113,7 +176,6 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
       child: Row(
         children: [
-          // Image
           Container(
             width: 80,
             height: 60,
@@ -123,30 +185,31 @@ class _BookingScreenState extends State<BookingScreen> {
                 image: AssetImage((widget.carData['images'] != null &&
                         (widget.carData['images'] as List).isNotEmpty)
                     ? widget.carData['images'][0]
-                    : 'assets/images/banner1.png'), // Fallback
+                    : 'assets/images/banner1.png'),
                 fit: BoxFit.cover,
               ),
             ),
           ),
           const SizedBox(width: 16),
-          // Info
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "${widget.carData['brand']} ${widget.carData['name']}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "${widget.carData['brand']} ${widget.carData['name']}",
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "${widget.carData['type']} • ${widget.carData['transmission']}",
-                style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  "${widget.carData['type']} • ${widget.carData['transmission']}",
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                ),
+              ],
+            ),
           )
         ],
       ),
@@ -154,13 +217,12 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Widget _buildCustomCalendar() {
-    // A simplified custom calendar for the current month
-    // In a real app, use 'table_calendar' package for complex logic
-
-    // Days in current month logic (Simplified for demo)
-    final int daysInMonth = 31;
+    // Logic for days in displayed month
+    final int daysInMonth =
+        DateUtils.getDaysInMonth(_focusedMonth.year, _focusedMonth.month);
     final int firstWeekday =
-        DateTime(DateTime.now().year, DateTime.now().month, 1).weekday;
+        DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday;
+    final List<String> weekDays = ["M", "T", "W", "T", "F", "S", "S"];
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -170,29 +232,47 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
       child: Column(
         children: [
-          // Header
+          // Month Navigation
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("December 2025",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16)),
+              Text(
+                // Simple Month Year Display
+                "${_focusedMonth.month == 1 ? "Jan" : _focusedMonth.month == 2 ? "Feb" : _focusedMonth.month == 3 ? "Mar" : _focusedMonth.month == 4 ? "Apr" : _focusedMonth.month == 5 ? "May" : _focusedMonth.month == 6 ? "Jun" : _focusedMonth.month == 7 ? "Jul" : _focusedMonth.month == 8 ? "Aug" : _focusedMonth.month == 9 ? "Sep" : _focusedMonth.month == 10 ? "Oct" : _focusedMonth.month == 11 ? "Nov" : "Dec"} ${_focusedMonth.year}",
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16),
+              ),
               Row(
                 children: [
-                  Icon(Icons.chevron_left, color: Colors.grey),
-                  const SizedBox(width: 16),
-                  Icon(Icons.chevron_right, color: Colors.white),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left, color: Colors.grey),
+                    onPressed: () {
+                      setState(() {
+                        _focusedMonth = DateTime(
+                            _focusedMonth.year, _focusedMonth.month - 1);
+                      });
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right, color: Colors.white),
+                    onPressed: () {
+                      setState(() {
+                        _focusedMonth = DateTime(
+                            _focusedMonth.year, _focusedMonth.month + 1);
+                      });
+                    },
+                  ),
                 ],
               )
             ],
           ),
-          const SizedBox(height: 16),
-          // Days Header
+          const SizedBox(height: 10),
+          // Weekdays
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: ["M", "T", "W", "T", "F", "S", "S"]
+            children: weekDays
                 .map((day) => SizedBox(
                     width: 30,
                     child: Center(
@@ -200,8 +280,8 @@ class _BookingScreenState extends State<BookingScreen> {
                             style: TextStyle(color: Colors.grey.shade600)))))
                 .toList(),
           ),
-          const SizedBox(height: 12),
-          // Calendar Grid
+          const SizedBox(height: 10),
+          // Grid
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -212,15 +292,21 @@ class _BookingScreenState extends State<BookingScreen> {
               crossAxisSpacing: 10,
             ),
             itemBuilder: (context, index) {
-              if (index < firstWeekday - 1)
-                return const SizedBox(); // Empty slots
+              if (index < firstWeekday - 1) return const SizedBox();
 
               final int day = index - (firstWeekday - 1) + 1;
-              final bool isBooked = _bookedDays.contains(day);
-              final bool isSelected = _isDateSelected(day);
+              final DateTime currentDate =
+                  DateTime(_focusedMonth.year, _focusedMonth.month, day);
+
+              // Only simulate booked days for current month/year to avoid complexity
+              final bool isBooked = _bookedDays.contains(day) &&
+                  _focusedMonth.month == DateTime.now().month &&
+                  _focusedMonth.year == DateTime.now().year;
+
+              final bool isSelected = _isDateSelected(currentDate);
 
               return GestureDetector(
-                onTap: isBooked ? null : () => _onDateTapped(day),
+                onTap: isBooked ? null : () => _onDateTapped(currentDate),
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected
@@ -259,102 +345,138 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  Widget _buildLegend() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        _legendItem(AppColors.primaryColor, "Selected"),
-        const SizedBox(width: 12),
-        _legendItem(Colors.grey.shade700, "Booked"),
-        const SizedBox(width: 12),
-        _legendItem(Colors.white, "Available"),
-      ],
-    );
-  }
+  Widget _buildDriverSelector() {
+    return SizedBox(
+      height: 140, // Height for driver cards
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: sampleDrivers.length,
+        separatorBuilder: (c, i) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final driver = sampleDrivers[index];
+          final isSelected = _selectedDriver == driver;
 
-  Widget _legendItem(Color color, String label) {
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 10)),
-      ],
-    );
-  }
-
-  Widget _buildRentalOptions() {
-    return Row(
-      children: [
-        // Driver Toggle
-        Expanded(
-          child: GestureDetector(
+          return GestureDetector(
             onTap: () {
               setState(() {
-                _isWithDriver = !_isWithDriver;
+                _selectedDriver = driver;
               });
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              width: 120,
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: _isWithDriver
-                    ? AppColors.primaryColor.withOpacity(0.2)
+                color: isSelected
+                    ? AppColors.primaryColor.withOpacity(0.1)
                     : AppColors.cardColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: _isWithDriver
-                        ? AppColors.primaryColor
-                        : Colors.transparent),
+                  color:
+                      isSelected ? AppColors.primaryColor : Colors.transparent,
+                  width: 2,
+                ),
               ),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.person,
-                      color: _isWithDriver
-                          ? AppColors.primaryColor
-                          : Colors.white),
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundImage: NetworkImage(driver['image']),
+                  ),
                   const SizedBox(height: 8),
-                  const Text("With Driver",
-                      style: TextStyle(color: Colors.white, fontSize: 12)),
-                  Text("+ \$50/day",
-                      style:
-                          TextStyle(color: Colors.grey.shade400, fontSize: 10)),
+                  Text(
+                    driver['name'],
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    "\$${driver['price']}/day",
+                    style: TextStyle(color: Colors.grey.shade400, fontSize: 10),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 10),
+                      Text(" ${driver['rating']}",
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 10)),
+                    ],
+                  )
                 ],
               ),
             ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        // Time Picker (Static for demo)
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-            decoration: BoxDecoration(
-              color: AppColors.cardColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                const Icon(Icons.access_time, color: Colors.white),
-                const SizedBox(height: 8),
-                const Text("Pickup Time",
-                    style: TextStyle(color: Colors.white, fontSize: 12)),
-                Text(_pickupTime,
-                    style: TextStyle(
-                        color: AppColors.primaryColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildLocationInput(String label, IconData icon, String value) {
+  Widget _buildTimePickerBox(String label, TimeOfDay time, bool isPickup) {
+    return GestureDetector(
+      onTap: () async {
+        final TimeOfDay? picked = await showTimePicker(
+          context: context,
+          initialTime: time,
+          builder: (context, child) {
+            return Theme(
+              data: ThemeData.dark().copyWith(
+                colorScheme: const ColorScheme.dark(
+                  primary: AppColors.primaryColor,
+                  onPrimary: Colors.black,
+                  surface: Color(0xFF1E1E1E),
+                  onSurface: Colors.white,
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+        if (picked != null) {
+          setState(() {
+            if (isPickup) {
+              _pickupTime = picked;
+            } else {
+              _dropoffTime = picked;
+            }
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppColors.cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Column(
+          children: [
+            Icon(isPickup ? Icons.access_time_filled : Icons.access_time,
+                color: isPickup ? AppColors.primaryColor : Colors.white),
+            const SizedBox(height: 8),
+            Text(label,
+                style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            const SizedBox(height: 4),
+            Text(
+              time.format(context),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationInput(
+      String label, IconData icon, String value, bool isPickup) {
     return Row(
       children: [
         Column(
@@ -372,21 +494,29 @@ class _BookingScreenState extends State<BookingScreen> {
               Text(label,
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
               const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-                decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Colors.white12)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(value,
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 14)),
-                    const Text("Edit",
-                        style: TextStyle(
-                            color: AppColors.primaryColor, fontSize: 12)),
-                  ],
+              InkWell(
+                onTap: () => _showLocationSelector(isPickup),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: const BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.white12)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          value,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Text("Edit",
+                          style: TextStyle(
+                              color: AppColors.primaryColor, fontSize: 12)),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -402,19 +532,19 @@ class _BookingScreenState extends State<BookingScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.cardColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+        borderRadius: BorderRadius.circular(
+          Dimens.corners * 2,
         ),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.5),
-              blurRadius: 10,
-              offset: const Offset(0, -5)),
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
+      margin: const EdgeInsets.all(Dimens.largePadding),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -432,18 +562,55 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             ],
           ),
-          SizedBox(
-            width: 160,
-            child: AppButton(
-              title: "Confirm Booking",
-              onPressed: () {
-                // Add booking logic or navigation to Success Screen
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content:
-                      Text("Booking Confirmed for ${widget.carData['brand']}!"),
-                  backgroundColor: Colors.green,
-                ));
-              },
+          const SizedBox(width: 40),
+          Expanded(
+            child: SizedBox(
+              height: 94,
+              child: AppButton(
+                title: "Confirm Booking",
+                onPressed: () {
+                  // 1. Validation
+                  if (_startDate == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please select dates!")));
+                    return;
+                  }
+
+                  // 2. Create a unique Booking ID
+                  final String bookingId =
+                      "ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
+
+                  // 3. SAVE THE DATA! (This connects it to the Booking Tab)
+                  // We add it to index 0 so it appears at the top of the list
+                  myBookings.insert(
+                      0,
+                      BookingModel(
+                        id: bookingId,
+                        car: widget.carData,
+                        startDate: _startDate!,
+                        endDate: _endDate ??
+                            _startDate!.add(const Duration(days: 1)),
+                        status: 'Active',
+                        totalPrice:
+                            price, // Ensure this variable name matches your calculation
+                      ));
+
+                  // 4. Navigate to Success Screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BookingSuccessScreen(
+                        carData: widget.carData,
+                        bookingId: bookingId,
+                        startDate: _startDate!,
+                        endDate: _endDate ??
+                            _startDate!.add(const Duration(days: 1)),
+                        totalPrice: price,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           )
         ],
@@ -451,40 +618,105 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // Logic Helpers
-  void _onDateTapped(int day) {
-    setState(() {
-      DateTime tappedDate =
-          DateTime(DateTime.now().year, DateTime.now().month, day);
+  // --- LOGIC METHODS ---
 
+  void _showLocationSelector(bool isPickup) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.cardColor,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          height: 400,
+          child: Column(
+            children: [
+              const AppTitleText("Select Location", fontSize: 18),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: _keralaLocations.length,
+                  separatorBuilder: (c, i) =>
+                      const Divider(color: Colors.white10),
+                  itemBuilder: (context, index) {
+                    final loc = _keralaLocations[index];
+                    return ListTile(
+                      leading:
+                          const Icon(Icons.location_on, color: Colors.grey),
+                      title: Text(loc,
+                          style: const TextStyle(color: Colors.white)),
+                      onTap: () {
+                        setState(() {
+                          if (isPickup) {
+                            _pickupLocation = loc;
+                          } else {
+                            _dropoffLocation = loc;
+                          }
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _onDateTapped(DateTime date) {
+    setState(() {
       if (_startDate == null || (_startDate != null && _endDate != null)) {
-        // Start fresh selection
-        _startDate = tappedDate;
+        _startDate = date;
         _endDate = null;
-      } else if (_startDate != null && tappedDate.isAfter(_startDate!)) {
-        // Select End Date
-        _endDate = tappedDate;
+      } else if (_startDate != null && date.isAfter(_startDate!)) {
+        _endDate = date;
       } else {
-        // Reset if tapping before start date
-        _startDate = tappedDate;
+        _startDate = date;
         _endDate = null;
       }
     });
   }
 
-  bool _isDateSelected(int day) {
+  bool _isDateSelected(DateTime date) {
     if (_startDate == null) return false;
-    DateTime checkDate =
-        DateTime(DateTime.now().year, DateTime.now().month, day);
 
-    // Single date selected
     if (_endDate == null) {
-      return checkDate.isAtSameMomentAs(_startDate!);
+      return DateUtils.isSameDay(date, _startDate);
     }
 
-    // Range selected
-    return (checkDate.isAtSameMomentAs(_startDate!) ||
-        checkDate.isAtSameMomentAs(_endDate!) ||
-        (checkDate.isAfter(_startDate!) && checkDate.isBefore(_endDate!)));
+    return (DateUtils.isSameDay(date, _startDate) ||
+        DateUtils.isSameDay(date, _endDate) ||
+        (date.isAfter(_startDate!) && date.isBefore(_endDate!)));
+  }
+
+  // Legend Helper
+  Widget _buildLegend() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        _legendItem(AppColors.primaryColor, "Selected"),
+        const SizedBox(width: 12),
+        _legendItem(Colors.grey.shade700, "Booked"),
+        const SizedBox(width: 12),
+        _legendItem(Colors.white, "Available"),
+      ],
+    );
+  }
+
+  Widget _legendItem(Color color, String label) {
+    return Row(
+      children: [
+        Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 4),
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+      ],
+    );
   }
 }
