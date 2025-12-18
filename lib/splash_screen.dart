@@ -3,9 +3,6 @@ import 'package:car_rental_app/core/gen/assets.gen.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-// ✅ IMPORT YOUR ONBOARDING SCREEN HERE
-// Ensure the path matches where you saved the file
 import 'package:car_rental_app/features/onboarding_feature/presentation/screen/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {

@@ -5,6 +5,8 @@ import 'package:car_rental_app/features/home_feature/presentation/screens/featur
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/settings_screen.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/become_host_screen.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/become_driver_screen.dart';
+import 'package:car_rental_app/features/home_feature/presentation/widgets/current_mode_badge.dart';
+import 'package:car_rental_app/features/home_feature/presentation/widgets/mode_switcher_card.dart';
 import 'package:car_rental_app/features/onboarding_feature/presentation/screen/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,6 +29,14 @@ class ProfileTab extends StatelessWidget {
           child: Column(
             children: [
               _buildProfileHeader(user),
+
+              const SizedBox(height: 8),
+
+              const CurrentModeBadge(),
+
+              const SizedBox(height: 32),
+
+              const ModeSwitcherCard(),
 
               const SizedBox(height: 30),
 

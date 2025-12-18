@@ -1,7 +1,9 @@
+import 'package:car_rental_app/core/managers/role_manager.dart';
 import 'package:car_rental_app/core/theme/colors.dart';
 import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_scaffold.dart';
-import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class BecomeDriverScreen extends StatefulWidget {
@@ -112,13 +114,46 @@ class _BecomeDriverScreenState extends State<BecomeDriverScreen> {
                 child: AppButton(
                   title:
                       _currentStep == 2 ? "Complete Registration" : "Continue",
-                  onPressed: () {
+                  onPressed: () async {
+                    // Make async
                     if (_currentStep < 2) {
                       setState(() => _currentStep++);
                     } else {
-                      Navigator.pop(context);
+                      // ✅ 1. SHOW LOADING (Optional but good UX)
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text("Driver Profile Submitted!")));
+                          content: Text("Submitting Application...")));
+
+                      // ✅ 2. UPDATE FIRESTORE
+                      try {
+                        final uid = FirebaseAuth.instance.currentUser?.uid;
+                        if (uid != null) {
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(uid)
+                              .update({
+                            'is_driver_verified':
+                                true, // Setting to true for demo (In real app, might be 'pending')
+                            'driver_details': {
+                              // You can add the form data here if you stored it in variables
+                              'submitted_at': FieldValue.serverTimestamp(),
+                            }
+                          });
+
+                          // ✅ 3. UPDATE LOCAL STATE & SWITCH MODE
+                          RoleManager().registerAsDriver();
+
+                          // ✅ 4. CLOSE SCREEN
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Welcome to Driver Mode!")));
+                          }
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(SnackBar(content: Text("Error: $e")));
+                      }
                     }
                   },
                 ),
@@ -222,10 +257,10 @@ class _BecomeDriverScreenState extends State<BecomeDriverScreen> {
           color: Colors.green.withOpacity(0.15),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(children: [
-          const Icon(Icons.security, color: Colors.greenAccent, size: 28),
-          const SizedBox(width: 16),
-          const Expanded(
+        child: const Row(children: [
+          Icon(Icons.security, color: Colors.greenAccent, size: 28),
+          SizedBox(width: 16),
+          Expanded(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text("Secure Verification",

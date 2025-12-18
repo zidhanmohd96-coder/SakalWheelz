@@ -2,11 +2,13 @@ import 'package:animate_do/animate_do.dart';
 import 'package:car_rental_app/core/gen/assets.gen.dart';
 import 'package:car_rental_app/core/theme/colors.dart';
 import 'package:car_rental_app/core/theme/dimens.dart';
+import 'package:car_rental_app/core/widgets/app_bordered_icon_button.dart';
 import 'package:car_rental_app/core/widgets/app_scaffold.dart';
 import 'package:car_rental_app/core/widgets/app_subtitle_text.dart';
 import 'package:car_rental_app/core/widgets/app_svg_viewer.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
 import 'package:car_rental_app/features/car_feature/presentation/widgets/rate_widget.dart';
+import 'package:car_rental_app/features/driver_feature/presentation/screens/driver_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
 
@@ -22,10 +24,18 @@ class DriversListScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Dimens.largePadding,
+          ),
+          child: AppBorderedIconButton(
+            iconPath: Assets.icons.arrowLeft1,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
         ),
+        leadingWidth: 90.0,
         title: const AppTitleText("Available Drivers", fontSize: 20.0),
       ),
       body: FadeInUp(
@@ -45,8 +55,11 @@ class DriversListScreen extends StatelessWidget {
   Widget _buildDriverCard(BuildContext context, Map<String, dynamic> driver) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Selected ${driver['name']}")),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DriverDetailsScreen(driver: driver),
+          ),
         );
       },
       child: Container(
@@ -77,7 +90,7 @@ class DriversListScreen extends StatelessWidget {
                     height: 100,
                     decoration: BoxDecoration(
                       color: Colors.grey[800],
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
                         // Safely handle image path
                         image: NetworkImage(driver['image']),
@@ -101,7 +114,7 @@ class DriversListScreen extends StatelessWidget {
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 18,
                               ),
                             ),
                             // --- FIX IS HERE: Use '== true' ---
@@ -129,7 +142,7 @@ class DriversListScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                driver['exp'] ?? '',
+                                driver['experience'] ?? '',
                                 style: const TextStyle(
                                   color: AppColors.primaryColor,
                                   fontSize: 10,

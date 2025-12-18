@@ -1,5 +1,4 @@
 import 'package:car_rental_app/core/gen/assets.gen.dart';
-import 'package:flutter/material.dart';
 
 // --- Consolidated Data Model for UI ---
 final List<Map<String, dynamic>> carsList = [
@@ -209,6 +208,7 @@ final List<Map<String, dynamic>> sampleDrivers = [
     'name': 'Rajesh Kumar',
     'experience': '5 Years',
     'rating': 4.8,
+    'isVerified': true,
     'price': 800,
     'image': 'https://randomuser.me/api/portraits/men/1.jpg',
     'category': 'Tourist',
@@ -218,6 +218,7 @@ final List<Map<String, dynamic>> sampleDrivers = [
     'name': 'Suresh Menon',
     'experience': '12 Years',
     'rating': 4.9,
+    'isVerified': true,
     'price': 1200,
     'image': 'https://randomuser.me/api/portraits/men/3.jpg',
     'category': 'Heavy',
@@ -227,6 +228,7 @@ final List<Map<String, dynamic>> sampleDrivers = [
     'name': 'Anil George',
     'experience': '3 Years',
     'rating': 4.5,
+    'isVerified': true,
     'price': 500,
     'image': 'https://randomuser.me/api/portraits/men/5.jpg',
     'category': 'Taxi',
@@ -236,10 +238,69 @@ final List<Map<String, dynamic>> sampleDrivers = [
     'name': 'Deepak S',
     'experience': '8 Years',
     'rating': 4.7,
+    'isVerified': true,
     'price': 900,
     'image': 'https://randomuser.me/api/portraits/men/7.jpg',
     'category': 'Tourist',
     'languages': ['English', 'Malayalam', 'Arabic'] // Added
+  },
+  {
+    'name': 'SuperStar S',
+    'experience': '6 Years',
+    'rating': 4.9,
+    'isVerified': true,
+    'price': 800,
+    'image':
+        'https://thumbs.dreamstime.com/b/portrait-surprised-boy-some-teeth-52230051.jpg',
+    'category': 'Tourist',
+    'languages': [
+      'English',
+      'Malayalam',
+    ] // Added
+  },
+  {
+    'name': 'Sooraj S',
+    'experience': '2 Years',
+    'rating': 4.4,
+    'isVerified': true,
+    'price': 660,
+    'image':
+        'https://imgcdn.stablediffusionweb.com/2024/9/8/aaa19751-0b60-44e6-838b-b55222ff4a5f.jpg',
+    'category': 'Taxi',
+    'languages': ['English', 'Malayalam', 'Arabic'] // Added
+  },
+  {
+    'name': 'Fayiz K M',
+    'experience': '7 Years',
+    'rating': 4.2,
+    'isVerified': true,
+    'price': 500,
+    'image':
+        'https://i.pinimg.com/736x/03/db/85/03db85320c033174789dea85e9ea66e4.jpg',
+    'category': 'Tourist',
+    'languages': ['English', 'Malayalam', 'Tamil'] // Added
+  },
+  {
+    'name': 'Salman Nazeer',
+    'experience': '3 Years',
+    'rating': 4.8,
+    'isVerified': true,
+    'price': 850,
+    'image':
+        'https://i.pinimg.com/736x/c8/46/d9/c846d953f46894d53cfa48a55b138f45.jpg',
+    'category': 'Heavy',
+    'languages': ['English', 'Malayalam', 'Arabic'] // Added
+  },
+  {
+    'name': 'Zidhan Muhammed',
+    'experience': '9 Years',
+    'rating': 5.0,
+    'isVerified': true,
+    'price': 960,
+    'image':
+        'https://i.pinimg.com/originals/8e/7f/de/8e7fde48bf40d2a077730ff3d0970bf3.jpg',
+    'category': 'Taxi',
+    'languages': ['English', 'Malayalam', 'Tamil', 'Deutsch'] // Added
   },
 ];
 

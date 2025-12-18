@@ -21,10 +21,10 @@ class HireDriversSection extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     AppTitleText("Hire Professional Drivers", fontSize: 18),
                     SizedBox(height: 4),
                     Text(

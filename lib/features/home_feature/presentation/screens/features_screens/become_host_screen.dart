@@ -1,6 +1,9 @@
+import 'package:car_rental_app/core/managers/role_manager.dart';
 import 'package:car_rental_app/core/theme/colors.dart';
 import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_scaffold.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class BecomeHostScreen extends StatefulWidget {
@@ -22,9 +25,17 @@ class _BecomeHostScreenState extends State<BecomeHostScreen> {
         leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context)),
-        title: Text("Become a Host\nStep ${_currentStep + 1} of 3",
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: Colors.white)),
+        title: Column(
+          children: [
+            const Text("Become a Host",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+            Text("Step ${_currentStep + 1} of 3",
+                style: const TextStyle(fontSize: 12, color: Colors.white70)),
+          ],
+        ),
         centerTitle: true,
       ),
       body: Column(
@@ -39,7 +50,7 @@ class _BecomeHostScreenState extends State<BecomeHostScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
                           color: index <= _currentStep
-                              ? Colors.blueAccent
+                              ? AppColors.primaryColor
                               : Colors.grey.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(2),
                         ),
@@ -70,14 +81,47 @@ class _BecomeHostScreenState extends State<BecomeHostScreen> {
                     title: _currentStep == 2
                         ? "Complete Registration"
                         : "Continue",
-                    onPressed: () {
+                    onPressed: () async {
+                      // Make async
                       if (_currentStep < 2) {
                         setState(() => _currentStep++);
                       } else {
-                        Navigator.pop(context);
+                        // ✅ 1. SHOW LOADING (Optional but good UX)
                         ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text("Host Application Submitted!")));
+                                content: Text("Submitting Application...")));
+
+                        // ✅ 2. UPDATE FIRESTORE
+                        try {
+                          final uid = FirebaseAuth.instance.currentUser?.uid;
+                          if (uid != null) {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(uid)
+                                .update({
+                              'is_host_verified':
+                                  true, // Setting to true for demo (In real app, might be 'pending')
+                              'host_details': {
+                                // You can add the form data here if you stored it in variables
+                                'submitted_at': FieldValue.serverTimestamp(),
+                              }
+                            });
+
+                            // ✅ 3. UPDATE LOCAL STATE & SWITCH MODE
+                            RoleManager().registerAsHost();
+
+                            // ✅ 4. CLOSE SCREEN
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text("Welcome to Host Mode!")));
+                            }
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Error: $e")));
+                        }
                       }
                     },
                   ),
@@ -109,7 +153,7 @@ class _BecomeHostScreenState extends State<BecomeHostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInfoBanner(
-            "Why become a Host?", Icons.auto_awesome, Colors.blueAccent, [
+            "Why become a Host?", Icons.auto_awesome, AppColors.primaryColor, [
           "Earn ₹30,000+ monthly",
           "List unlimited vehicles",
           "Full control over pricing"

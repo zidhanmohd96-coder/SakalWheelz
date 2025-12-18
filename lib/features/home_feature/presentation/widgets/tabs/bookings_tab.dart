@@ -1,5 +1,4 @@
 import 'package:car_rental_app/core/theme/colors.dart';
-import 'package:car_rental_app/core/theme/dimens.dart';
 import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
 import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
