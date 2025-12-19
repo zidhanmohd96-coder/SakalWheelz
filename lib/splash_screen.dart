@@ -1,6 +1,11 @@
 import 'dart:async';
 import 'package:car_rental_app/core/gen/assets.gen.dart';
+import 'package:car_rental_app/core/managers/role_manager.dart';
+import 'package:car_rental_app/core/providers/mode_provider.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/home_screen.dart';
+import 'package:car_rental_app/features/host_feature/presentation/screens/host_home_screen.dart';
+import 'package:car_rental_app/features/host_feature/presentation/tabs/host_dashboard_tab.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:car_rental_app/features/onboarding_feature/presentation/screen/onboarding_screen.dart';
@@ -47,18 +52,46 @@ class _SplashScreenState extends State<SplashScreen>
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
-        // ✅ User is ALREADY logged in -> Go to Home
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const HomeScreen()), // Your Home Page
-        );
+        // ✅ User is Logged In - Fetch Roles from Firestore
+        try {
+          DocumentSnapshot userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+          if (userDoc.exists) {
+            final data = userDoc.data() as Map<String, dynamic>;
+
+            // Debug Print to check what's coming from Firebase
+            print("🔥 FIREBASE DATA: $data");
+
+            // Safely get booleans (handling nulls)
+            bool isDriver = data['is_driver_verified'] == true;
+            bool isHost = data['is_host_verified'] == true;
+
+            // ⚡ UPDATE THE MANAGER
+            RoleManager().setRoles(isDriver: isDriver, isHost: isHost);
+            print("✅ RoleManager Updated: Driver=$isDriver, Host=$isHost");
+          }
+        } catch (e) {
+          print("⚠️ Error fetching user roles: $e");
+        }
+
+        // 3. Navigate to MAIN WRAPPER (Not HomeScreen)
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
       } else {
-        // ❌ User is NOT logged in -> Go to Login/Onboarding
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-        );
+        // ❌ No User - Go to Onboarding
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+          );
+        }
       }
     }
   }

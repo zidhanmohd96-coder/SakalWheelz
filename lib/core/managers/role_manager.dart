@@ -51,8 +51,7 @@ class RoleManager extends ChangeNotifier {
   void setRoles({required bool isDriver, required bool isHost}) {
     _isDriver = isDriver;
     _isHost = isHost;
-    // If they were last in driver mode, you could restore that too,
-    // but for now default to customer is safer.
+    // Notify listeners so any UI listening updates immediately
     notifyListeners();
   }
 }
