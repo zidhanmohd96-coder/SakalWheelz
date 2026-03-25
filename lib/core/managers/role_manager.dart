@@ -12,7 +12,7 @@ class RoleManager extends ChangeNotifier {
   AppMode _currentMode = AppMode.customer;
 
   // Roles (Default: Just a customer)
-  bool _isCustomer = true;
+  final bool _isCustomer = true;
   bool _isHost = false;
   bool _isDriver = false;
 

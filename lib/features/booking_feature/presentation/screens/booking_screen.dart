@@ -7,6 +7,8 @@ import 'package:car_rental_app/core/widgets/app_title_text.dart';
 import 'package:car_rental_app/features/booking_feature/presentation/screens/booking_success_screen.dart';
 import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart'; // Ensure sampleDrivers is here
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class BookingScreen extends StatefulWidget {
   final Map<String, dynamic> carData;
@@ -25,10 +27,18 @@ class _BookingScreenState extends State<BookingScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   final List<int> _bookedDays = [5, 6, 12, 18, 19, 20]; // Mock booked days
+  final RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOn;
 
   // Driver State
   bool _isWithDriver = false;
   Map<String, dynamic>? _selectedDriver;
+
+  // Insurance State
+  bool _isPremiumInsurance = false;
+
+  // Promo Code State
+  final TextEditingController _promoController = TextEditingController();
+  bool _isPromoApplied = false;
 
   // Time State
   TimeOfDay _pickupTime = const TimeOfDay(hour: 10, minute: 0);
@@ -69,9 +79,12 @@ class _BookingScreenState extends State<BookingScreen> {
             : _selectedDriver!['price'])
         : 50.0;
 
-    double driverTotalCost =
-        _isWithDriver ? (driverDailyPrice * rentalDays) : 0.0;
-    double totalTripPrice = (basePrice * rentalDays) + driverTotalCost;
+    double driverTotalCost = _isWithDriver ? (driverDailyPrice * rentalDays) : 0.0;
+    double insuranceCost = _isPremiumInsurance ? (15.0 * rentalDays) : 0.0;
+    double promoDiscount = _isPromoApplied ? 0.10 : 0.0; // 10% off
+
+    double subTotal = (basePrice * rentalDays) + driverTotalCost + insuranceCost;
+    double totalTripPrice = subTotal - (subTotal * promoDiscount);
 
     return AppScaffold(
       appBar: AppBar(
@@ -99,8 +112,6 @@ class _BookingScreenState extends State<BookingScreen> {
               const AppTitleText("Select Dates", fontSize: 18),
               const SizedBox(height: 12),
               _buildCustomCalendar(),
-              const SizedBox(height: 8),
-              _buildLegend(),
 
               const AppVSpace(space: Dimens.largePadding),
 
@@ -128,7 +139,21 @@ class _BookingScreenState extends State<BookingScreen> {
 
               const AppVSpace(space: Dimens.largePadding),
 
-              // 4. Time Selection
+              // 4. Insurance & Protection
+              const AppTitleText("Protection Plans", fontSize: 18),
+              const SizedBox(height: 12),
+              _buildInsuranceSelector(),
+              
+              const AppVSpace(space: Dimens.largePadding),
+
+              // 5. Promo Code
+              const AppTitleText("Apply Promo Code", fontSize: 18),
+              const SizedBox(height: 12),
+              _buildPromoCodeField(),
+
+              const AppVSpace(space: Dimens.largePadding),
+
+              // 6. Time Selection
               const AppTitleText("Time Schedule", fontSize: 18),
               const SizedBox(height: 16),
               Row(
@@ -217,131 +242,162 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Widget _buildCustomCalendar() {
-    // Logic for days in displayed month
-    final int daysInMonth =
-        DateUtils.getDaysInMonth(_focusedMonth.year, _focusedMonth.month);
-    final int firstWeekday =
-        DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday;
-    final List<String> weekDays = ["M", "T", "W", "T", "F", "S", "S"];
-
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
-        children: [
-          // Month Navigation
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                // Simple Month Year Display
-                "${_focusedMonth.month == 1 ? "Jan" : _focusedMonth.month == 2 ? "Feb" : _focusedMonth.month == 3 ? "Mar" : _focusedMonth.month == 4 ? "Apr" : _focusedMonth.month == 5 ? "May" : _focusedMonth.month == 6 ? "Jun" : _focusedMonth.month == 7 ? "Jul" : _focusedMonth.month == 8 ? "Aug" : _focusedMonth.month == 9 ? "Sep" : _focusedMonth.month == 10 ? "Oct" : _focusedMonth.month == 11 ? "Nov" : "Dec"} ${_focusedMonth.year}",
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16),
-              ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left, color: Colors.grey),
-                    onPressed: () {
-                      setState(() {
-                        _focusedMonth = DateTime(
-                            _focusedMonth.year, _focusedMonth.month - 1);
-                      });
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right, color: Colors.white),
-                    onPressed: () {
-                      setState(() {
-                        _focusedMonth = DateTime(
-                            _focusedMonth.year, _focusedMonth.month + 1);
-                      });
-                    },
-                  ),
-                ],
-              )
-            ],
+      child: TableCalendar(
+        firstDay: DateTime.now(),
+        lastDay: DateTime.now().add(const Duration(days: 365)),
+        focusedDay: _focusedMonth,
+        rangeStartDay: _startDate,
+        rangeEndDay: _endDate,
+        calendarFormat: CalendarFormat.month,
+        rangeSelectionMode: _rangeSelectionMode,
+        onPageChanged: (focusedDay) {
+          _focusedMonth = focusedDay;
+        },
+        onRangeSelected: (start, end, focusedDay) {
+          setState(() {
+            _startDate = start;
+            _endDate = end;
+            _focusedMonth = focusedDay;
+          });
+        },
+        calendarStyle: CalendarStyle(
+          rangeHighlightColor: AppColors.primaryColor.withOpacity(0.3),
+          rangeStartDecoration: const BoxDecoration(
+            color: AppColors.primaryColor,
+            shape: BoxShape.circle,
           ),
-          const SizedBox(height: 10),
-          // Weekdays
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: weekDays
-                .map((day) => SizedBox(
-                    width: 30,
-                    child: Center(
-                        child: Text(day,
-                            style: TextStyle(color: Colors.grey.shade600)))))
-                .toList(),
+          rangeEndDecoration: const BoxDecoration(
+            color: AppColors.primaryColor,
+            shape: BoxShape.circle,
           ),
-          const SizedBox(height: 10),
-          // Grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: daysInMonth + (firstWeekday - 1),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-            ),
-            itemBuilder: (context, index) {
-              if (index < firstWeekday - 1) return const SizedBox();
-
-              final int day = index - (firstWeekday - 1) + 1;
-              final DateTime currentDate =
-                  DateTime(_focusedMonth.year, _focusedMonth.month, day);
-
-              // Only simulate booked days for current month/year to avoid complexity
-              final bool isBooked = _bookedDays.contains(day) &&
-                  _focusedMonth.month == DateTime.now().month &&
-                  _focusedMonth.year == DateTime.now().year;
-
-              final bool isSelected = _isDateSelected(currentDate);
-
-              return GestureDetector(
-                onTap: isBooked ? null : () => _onDateTapped(currentDate),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primaryColor
-                        : (isBooked
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.transparent),
-                    shape: BoxShape.circle,
-                    border: isSelected
-                        ? null
-                        : Border.all(
-                            color: isBooked
-                                ? Colors.transparent
-                                : Colors.grey.shade800),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "$day",
-                      style: TextStyle(
-                        color: isBooked
-                            ? Colors.grey.shade700
-                            : (isSelected ? Colors.black : Colors.white),
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
-                        decoration:
-                            isBooked ? TextDecoration.lineThrough : null,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+          todayDecoration: BoxDecoration(
+            color: Colors.transparent,
+            border: Border.all(color: AppColors.primaryColor),
+            shape: BoxShape.circle,
           ),
-        ],
+          defaultTextStyle: const TextStyle(color: Colors.white),
+          weekendTextStyle: const TextStyle(color: Colors.white),
+          todayTextStyle: const TextStyle(color: AppColors.primaryColor),
+          outsideTextStyle: const TextStyle(color: Colors.grey),
+          disabledTextStyle: const TextStyle(color: Colors.grey),
+        ),
+        headerStyle: const HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: true,
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
+          rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
+        ),
+        daysOfWeekStyle: const DaysOfWeekStyle(
+          weekdayStyle: TextStyle(color: Colors.grey),
+          weekendStyle: TextStyle(color: Colors.grey),
+        ),
+        enabledDayPredicate: (day) {
+          if (day.month == DateTime.now().month && day.year == DateTime.now().year) {
+            if (_bookedDays.contains(day.day)) {
+              return false;
+            }
+          }
+          return true;
+        },
       ),
+    );
+  }
+
+  Widget _buildInsuranceSelector() {
+    return Row(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _isPremiumInsurance = false),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: !_isPremiumInsurance ? AppColors.primaryColor.withOpacity(0.1) : AppColors.cardColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: !_isPremiumInsurance ? AppColors.primaryColor : Colors.white10),
+              ),
+              child: Column(
+                children: [
+                  const Text("Basic", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text("Included", style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _isPremiumInsurance = true),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _isPremiumInsurance ? AppColors.primaryColor.withOpacity(0.1) : AppColors.cardColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _isPremiumInsurance ? AppColors.primaryColor : Colors.white10),
+              ),
+              child: Column(
+                children: [
+                  const Text("Premium", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text("+\$15 / day", style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPromoCodeField() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppColors.cardColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: TextField(
+              controller: _promoController,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                hintText: "Enter Promo Code",
+                hintStyle: TextStyle(color: Colors.grey),
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryColor,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onPressed: () {
+            if (_promoController.text.toUpperCase() == "SAKAL10") {
+              setState(() => _isPromoApplied = true);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Promo Applied! 10% Off")));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invalid Promo Code")));
+            }
+          },
+          child: const Text("Apply", style: TextStyle(color: Colors.white)),
+        )
+      ],
     );
   }
 
@@ -419,33 +475,52 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Widget _buildTimePickerBox(String label, TimeOfDay time, bool isPickup) {
     return GestureDetector(
-      onTap: () async {
-        final TimeOfDay? picked = await showTimePicker(
+      onTap: () {
+        showCupertinoModalPopup(
           context: context,
-          initialTime: time,
-          builder: (context, child) {
-            return Theme(
-              data: ThemeData.dark().copyWith(
-                colorScheme: const ColorScheme.dark(
-                  primary: AppColors.primaryColor,
-                  onPrimary: Colors.black,
-                  surface: Color(0xFF1E1E1E),
-                  onSurface: Colors.white,
-                ),
+          builder: (context) {
+            return Container(
+              height: 250,
+              color: const Color(0xFF1E1E1E),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CupertinoButton(
+                        child: const Text('Done', style: TextStyle(color: AppColors.primaryColor)),
+                        onPressed: () => Navigator.pop(context),
+                      )
+                    ],
+                  ),
+                  Expanded(
+                    child: CupertinoTheme(
+                      data: const CupertinoThemeData(
+                        textTheme: CupertinoTextThemeData(
+                          dateTimePickerTextStyle: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
+                      child: CupertinoDatePicker(
+                        mode: CupertinoDatePickerMode.time,
+                        initialDateTime: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, time.hour, time.minute),
+                        use24hFormat: false,
+                        onDateTimeChanged: (DateTime newTime) {
+                          setState(() {
+                            if (isPickup) {
+                              _pickupTime = TimeOfDay.fromDateTime(newTime);
+                            } else {
+                              _dropoffTime = TimeOfDay.fromDateTime(newTime);
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: child!,
             );
           },
         );
-        if (picked != null) {
-          setState(() {
-            if (isPickup) {
-              _pickupTime = picked;
-            } else {
-              _dropoffTime = picked;
-            }
-          });
-        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
@@ -580,35 +655,8 @@ class _BookingScreenState extends State<BookingScreen> {
                   final String bookingId =
                       "ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
 
-                  // 3. SAVE THE DATA! (This connects it to the Booking Tab)
-                  // We add it to index 0 so it appears at the top of the list
-                  myBookings.insert(
-                      0,
-                      BookingModel(
-                        id: bookingId,
-                        car: widget.carData,
-                        startDate: _startDate!,
-                        endDate: _endDate ??
-                            _startDate!.add(const Duration(days: 1)),
-                        status: 'Active',
-                        totalPrice:
-                            price, // Ensure this variable name matches your calculation
-                      ));
-
-                  // 4. Navigate to Success Screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BookingSuccessScreen(
-                        carData: widget.carData,
-                        bookingId: bookingId,
-                        startDate: _startDate!,
-                        endDate: _endDate ??
-                            _startDate!.add(const Duration(days: 1)),
-                        totalPrice: price,
-                      ),
-                    ),
-                  );
+                  // Show KYC Validation Mock
+                  _showKYCDialog(price, bookingId);
                 },
               ),
             ),
@@ -619,6 +667,65 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   // --- LOGIC METHODS ---
+
+  void _showKYCDialog(double price, String bookingId) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.cardColor,
+          title: const Text("Identity Verification", style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.badge, size: 60, color: AppColors.primaryColor),
+              const SizedBox(height: 16),
+              const Text("As this is your first booking, please verify your Driving License to proceed.", 
+                style: TextStyle(color: Colors.grey), textAlign: TextAlign.center),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("License Verified!")));
+                
+                // Add to Bookings and Navigate
+                myBookings.insert(0, BookingModel(
+                  id: bookingId,
+                  car: widget.carData,
+                  startDate: _startDate!,
+                  endDate: _endDate ?? _startDate!.add(const Duration(days: 1)),
+                  status: 'Active',
+                  totalPrice: price,
+                ));
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookingSuccessScreen(
+                      carData: widget.carData,
+                      bookingId: bookingId,
+                      startDate: _startDate!,
+                      endDate: _endDate ?? _startDate!.add(const Duration(days: 1)),
+                      totalPrice: price,
+                    ),
+                  ),
+                );
+              },
+              child: const Text("Upload & Verify", style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        );
+      }
+    );
+  }
 
   void _showLocationSelector(bool isPickup) {
     showModalBottomSheet(

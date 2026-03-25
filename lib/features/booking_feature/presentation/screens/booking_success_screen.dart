@@ -4,6 +4,7 @@ import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_scaffold.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/home_screen.dart'; // Ensure this points to your actual Home
+import 'package:car_rental_app/features/booking_feature/presentation/screens/delivery_tracking_screen.dart';
 import 'package:flutter/material.dart';
 
 class BookingSuccessScreen extends StatelessWidget {
@@ -94,20 +95,34 @@ class BookingSuccessScreen extends StatelessWidget {
 
             const Spacer(),
 
-            // 3. Action Button
+            // 3. Action Buttons
             SizedBox(
               width: double.infinity,
-              height: 94,
+              height: 70,
               child: AppButton(
-                title: "Go to My Trips",
-                onPressed: () => _goToHome(context),
+                title: "Track Delivery",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DeliveryTrackingScreen(carData: carData),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => _goToHome(context),
-              child: const Text("Back to Home",
-                  style: TextStyle(color: Colors.grey)),
+            SizedBox(
+              width: double.infinity,
+              height: 70,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.primaryColor),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // Dimens roughly
+                ),
+                onPressed: () => _goToHome(context),
+                child: const Text("Go to My Trips", style: TextStyle(color: AppColors.primaryColor, fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
             ),
             const SizedBox(height: 30),
           ],
