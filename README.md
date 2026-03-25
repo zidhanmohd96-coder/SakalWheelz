@@ -1,45 +1,97 @@
-## 🚗 SakalWheels – Flutter UI
+
+---
+
+# 🚗 **SakalWheels — Flutter Car Rental App
 
 ![Untitled](https://raw.githubusercontent.com/ales-dev-studio/car_rental_app/refs/heads/main/assets/images/Demo.jpg)
 
-A sleek and modern Flutter UI for a Car Rental Application, designed with a clean user interface and smooth animations.
-This project showcases a responsive mobile app layout.
+# 🚗 SakalWheels — Car Rental App (Flutter App)
 
-## Installation
+A sleek, modern, and responsive **Car Rental Application** built using Flutter.  
+Designed with smooth animations, clean components, and an intuitive mobile-first layout.
 
-1. Clone the repository:
+This project showcases a scalable UI foundation suitable for real-world car rental platforms.
 
-   ```bash
-   git clone https://github.com/ales-dev-studio/car_rental_app.git
-   ```
 
-2. Change to the project directory:
+## ✨ Features
 
-   ```bash
-   cd car_rental_app
-   ```
+- 🧭 Clean & Minimal UI
+- 📱 Fully Responsive Layout
+- 🎞 Smooth Animations
+- 🧩 Modular & Scalable Codebase
+- 🧱 Built with Clean Architecture Principles
+- Authentication
 
-3. Install the dependencies:
 
-   ```bash
-   flutter pub get
-   ```
+## 🏗️ Project Structure
 
-4. Run the app:
+````
 
-   ```bash
-   flutter run
-   ```
+lib/
+├─ core/          # Shared utilities & constants
+├─ features/
+│   └─ {feature_name}/
+│       ├─ data/          # Data sources, models, repositories
+│       ├─ domain/        # Business logic, use cases, entities
+│       └─ presentation/  # UI, widgets, BLoC / state mgmt
+└─ main.dart      # App entry point
 
-## Structure
+````
 
-The app follows the Clean Architecture principles, with the following structure:
 
-- `lib/`
-    - `core/`: Contains Core Utilities that used entire application
-    - `features/`:
-        - `{features_a}`:
-            - `data/`: Contains the data layer responsible for handling data fetching and caching.
-            - `domain/`: Defines the core business logic and entities of the app.
-            - `presentation/`: Contains the UI layer of the app, including BLOCs, views, and widgets.
-    - `main.dart`: Entry point of the application.
+## 🚀 Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/ales-dev-studio/car_rental_app.git
+````
+
+Move into project folder
+
+```bash
+cd car_rental_app
+```
+
+Install dependencies
+
+```bash
+flutter pub get
+```
+
+Run the app
+
+```bash
+flutter run
+```
+
+## 🛠️ Technologies Used
+
+* Flutter
+* Dart
+* Clean Architecture
+* BLoC (or compatible state management approach)
+* Modular Feature Structure
+* Firebase
+* Database management
+* Authentication using firebase
+
+## 🤝 Contributing
+
+Pull requests are welcome!
+
+You may:
+
+* Improve UI components
+* Add animations
+* Suggest UX enhancements
+
+## 👤 Author
+
+Developed by **Ales Dev Studio**
+
+## 👤 Modified By
+
+Fully changed app from just a UI to a working app with somany features by **Zidhan Muhammed**
+
+📌 Repository — [https://github.com/zidhanmohd96-coder/SakalWheelz](https://github.com/zidhanmohd96-coder/SakalWheelz)
