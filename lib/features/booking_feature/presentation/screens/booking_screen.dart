@@ -79,11 +79,13 @@ class _BookingScreenState extends State<BookingScreen> {
             : _selectedDriver!['price'])
         : 50.0;
 
-    double driverTotalCost = _isWithDriver ? (driverDailyPrice * rentalDays) : 0.0;
+    double driverTotalCost =
+        _isWithDriver ? (driverDailyPrice * rentalDays) : 0.0;
     double insuranceCost = _isPremiumInsurance ? (15.0 * rentalDays) : 0.0;
     double promoDiscount = _isPromoApplied ? 0.10 : 0.0; // 10% off
 
-    double subTotal = (basePrice * rentalDays) + driverTotalCost + insuranceCost;
+    double subTotal =
+        (basePrice * rentalDays) + driverTotalCost + insuranceCost;
     double totalTripPrice = subTotal - (subTotal * promoDiscount);
 
     return AppScaffold(
@@ -143,7 +145,7 @@ class _BookingScreenState extends State<BookingScreen> {
               const AppTitleText("Protection Plans", fontSize: 18),
               const SizedBox(height: 12),
               _buildInsuranceSelector(),
-              
+
               const AppVSpace(space: Dimens.largePadding),
 
               // 5. Promo Code
@@ -290,7 +292,8 @@ class _BookingScreenState extends State<BookingScreen> {
         headerStyle: const HeaderStyle(
           formatButtonVisible: false,
           titleCentered: true,
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          titleTextStyle: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
           leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
           rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
         ),
@@ -299,7 +302,8 @@ class _BookingScreenState extends State<BookingScreen> {
           weekendStyle: TextStyle(color: Colors.grey),
         ),
         enabledDayPredicate: (day) {
-          if (day.month == DateTime.now().month && day.year == DateTime.now().year) {
+          if (day.month == DateTime.now().month &&
+              day.year == DateTime.now().year) {
             if (_bookedDays.contains(day.day)) {
               return false;
             }
@@ -319,15 +323,24 @@ class _BookingScreenState extends State<BookingScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: !_isPremiumInsurance ? AppColors.primaryColor.withOpacity(0.1) : AppColors.cardColor,
+                color: !_isPremiumInsurance
+                    ? AppColors.primaryColor.withOpacity(0.1)
+                    : AppColors.cardColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: !_isPremiumInsurance ? AppColors.primaryColor : Colors.white10),
+                border: Border.all(
+                    color: !_isPremiumInsurance
+                        ? AppColors.primaryColor
+                        : Colors.white10),
               ),
               child: Column(
                 children: [
-                  const Text("Basic", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  const Text("Basic",
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text("Included", style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                  Text("Included",
+                      style:
+                          TextStyle(color: Colors.grey.shade400, fontSize: 12)),
                 ],
               ),
             ),
@@ -340,15 +353,24 @@ class _BookingScreenState extends State<BookingScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: _isPremiumInsurance ? AppColors.primaryColor.withOpacity(0.1) : AppColors.cardColor,
+                color: _isPremiumInsurance
+                    ? AppColors.primaryColor.withOpacity(0.1)
+                    : AppColors.cardColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _isPremiumInsurance ? AppColors.primaryColor : Colors.white10),
+                border: Border.all(
+                    color: _isPremiumInsurance
+                        ? AppColors.primaryColor
+                        : Colors.white10),
               ),
               child: Column(
                 children: [
-                  const Text("Premium", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  const Text("Premium",
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text("+\$15 / day", style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                  Text("+\$15 / day",
+                      style:
+                          TextStyle(color: Colors.grey.shade400, fontSize: 12)),
                 ],
               ),
             ),
@@ -385,14 +407,17 @@ class _BookingScreenState extends State<BookingScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
           onPressed: () {
             if (_promoController.text.toUpperCase() == "SAKAL10") {
               setState(() => _isPromoApplied = true);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Promo Applied! 10% Off")));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Promo Applied! 10% Off")));
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invalid Promo Code")));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Invalid Promo Code")));
             }
           },
           child: const Text("Apply", style: TextStyle(color: Colors.white)),
@@ -488,7 +513,8 @@ class _BookingScreenState extends State<BookingScreen> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       CupertinoButton(
-                        child: const Text('Done', style: TextStyle(color: AppColors.primaryColor)),
+                        child: const Text('Done',
+                            style: TextStyle(color: AppColors.primaryColor)),
                         onPressed: () => Navigator.pop(context),
                       )
                     ],
@@ -497,12 +523,18 @@ class _BookingScreenState extends State<BookingScreen> {
                     child: CupertinoTheme(
                       data: const CupertinoThemeData(
                         textTheme: CupertinoTextThemeData(
-                          dateTimePickerTextStyle: TextStyle(color: Colors.white, fontSize: 18),
+                          dateTimePickerTextStyle:
+                              TextStyle(color: Colors.white, fontSize: 18),
                         ),
                       ),
                       child: CupertinoDatePicker(
                         mode: CupertinoDatePickerMode.time,
-                        initialDateTime: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, time.hour, time.minute),
+                        initialDateTime: DateTime(
+                            DateTime.now().year,
+                            DateTime.now().month,
+                            DateTime.now().day,
+                            time.hour,
+                            time.minute),
                         use24hFormat: false,
                         onDateTimeChanged: (DateTime newTime) {
                           setState(() {
@@ -670,61 +702,71 @@ class _BookingScreenState extends State<BookingScreen> {
 
   void _showKYCDialog(double price, String bookingId) {
     showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardColor,
-          title: const Text("Identity Verification", style: TextStyle(color: Colors.white)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.badge, size: 60, color: AppColors.primaryColor),
-              const SizedBox(height: 16),
-              const Text("As this is your first booking, please verify your Driving License to proceed.", 
-                style: TextStyle(color: Colors.grey), textAlign: TextAlign.center),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            backgroundColor: AppColors.cardColor,
+            title: const Text("Identity Verification",
+                style: TextStyle(color: Colors.white)),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.badge, size: 60, color: AppColors.primaryColor),
+                SizedBox(height: 16),
+                Text(
+                    "As this is your first booking, please verify your Driving License to proceed.",
+                    style: TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center),
+              ],
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("License Verified!")));
-                
-                // Add to Bookings and Navigate
-                myBookings.insert(0, BookingModel(
-                  id: bookingId,
-                  car: widget.carData,
-                  startDate: _startDate!,
-                  endDate: _endDate ?? _startDate!.add(const Duration(days: 1)),
-                  status: 'Active',
-                  totalPrice: price,
-                ));
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child:
+                    const Text("Cancel", style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor),
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("License Verified!")));
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BookingSuccessScreen(
-                      carData: widget.carData,
-                      bookingId: bookingId,
-                      startDate: _startDate!,
-                      endDate: _endDate ?? _startDate!.add(const Duration(days: 1)),
-                      totalPrice: price,
+                  // Add to Bookings and Navigate
+                  myBookings.insert(
+                      0,
+                      BookingModel(
+                        id: bookingId,
+                        car: widget.carData,
+                        startDate: _startDate!,
+                        endDate: _endDate ??
+                            _startDate!.add(const Duration(days: 1)),
+                        status: 'Active',
+                        totalPrice: price,
+                      ));
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BookingSuccessScreen(
+                        carData: widget.carData,
+                        bookingId: bookingId,
+                        startDate: _startDate!,
+                        endDate: _endDate ??
+                            _startDate!.add(const Duration(days: 1)),
+                        totalPrice: price,
+                      ),
                     ),
-                  ),
-                );
-              },
-              child: const Text("Upload & Verify", style: TextStyle(color: Colors.black)),
-            ),
-          ],
-        );
-      }
-    );
+                  );
+                },
+                child: const Text("Upload & Verify",
+                    style: TextStyle(color: Colors.black)),
+              ),
+            ],
+          );
+        });
   }
 
   void _showLocationSelector(bool isPickup) {

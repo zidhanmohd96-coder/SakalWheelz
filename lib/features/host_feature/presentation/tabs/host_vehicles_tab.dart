@@ -54,9 +54,9 @@ class HostVehiclesTab extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
+                      const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           AppTitleText("Toyota Fortuner", fontSize: 16),
                           SizedBox(height: 4),
                           Text("KL-07-BW-4055",

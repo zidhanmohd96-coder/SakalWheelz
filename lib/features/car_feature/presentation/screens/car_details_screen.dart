@@ -84,13 +84,13 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: Dimens.mediumPadding),
                     child: Image.asset(
-                      images[index],
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                          Icons.car_repair,
-                          size: 100,
-                          color: Colors.grey),
-                    ),
+                        images[index],
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => const Icon(
+                            Icons.car_repair,
+                            size: 100,
+                            color: Colors.grey),
+                      ),
                   );
                 },
               ),

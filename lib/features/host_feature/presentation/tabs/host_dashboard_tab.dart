@@ -15,7 +15,7 @@ class HostDashboardTab extends StatelessWidget {
         backgroundColor: Colors.transparent,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      drawer: const ModeDrawer(), // Allows switching back to Customer
+      // drawer: const ModeDrawer(), // Allows switching back to Customer
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(Dimens.largePadding),
         child: Column(
@@ -39,9 +39,9 @@ class HostDashboardTab extends StatelessWidget {
                       offset: const Offset(0, 5)),
                 ],
               ),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text("Total Earnings",
                       style: TextStyle(color: Colors.white70)),
                   SizedBox(height: 8),
@@ -135,13 +135,13 @@ class HostDashboardTab extends StatelessWidget {
   }
 }
 
-class ModeDrawer extends StatelessWidget {
-  const ModeDrawer({super.key});
+// class ModeDrawer extends StatelessWidget {
+//   const ModeDrawer({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: Container(),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Drawer(
+//       child: Container(),
+//     );
+//   }
+// }

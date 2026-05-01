@@ -16,6 +16,7 @@ import 'package:car_rental_app/features/authentication_feature/presentation/scre
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:animate_do/animate_do.dart';
 
 // 1. Main Widget: Sets up the BlocProvider
 class MobileLoginScreen extends StatelessWidget {
@@ -134,16 +135,24 @@ class _MobileLoginContentState extends State<_MobileLoginContent> {
         child: Column(
           children: [
             const AppVSpace(space: Dimens.extraLargePadding),
-            Image.asset(Assets.images.textLogo),
-            const AppVSpace(space: Dimens.extraLargePadding),
-            const AppTitleText('Login / Register'),
-            const AppVSpace(),
-            const AppSubtitleText(
-              'Please confirm your country code\nand enter your phone number',
+            ZoomIn(
+              duration: const Duration(milliseconds: 800), 
+              child: Image.asset(Assets.images.textLogo)
             ),
             const AppVSpace(space: Dimens.extraLargePadding),
-
-            // Country Picker
+            FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 200),
+              child: Column(
+                children: [
+                  const AppTitleText('Login / Register'),
+                  const AppVSpace(),
+                  const AppSubtitleText(
+                    'Please confirm your country code\nand enter your phone number',
+                  ),
+                  const AppVSpace(space: Dimens.extraLargePadding),
+      
+                  // Country Picker
             AppListTile(
               onTap: () {
                 push(
@@ -209,8 +218,11 @@ class _MobileLoginContentState extends State<_MobileLoginContent> {
                         ['code'],
               ),
             ),
-            // Add extra space at bottom so keyboard doesn't cover button
-            const SizedBox(height: 100),
+                  // Add extra space at bottom so keyboard doesn't cover button
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
           ],
         ),
       ),

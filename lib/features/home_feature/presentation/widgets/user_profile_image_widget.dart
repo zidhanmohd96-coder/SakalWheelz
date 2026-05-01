@@ -24,15 +24,17 @@ class UserProfileImageWidget extends StatelessWidget {
       child: SizedBox(
         width: width ?? 48.0,
         height: height ?? 48.0,
-        child: CircleAvatar(
-          backgroundColor: AppColors.veryLightPrimaryColor,
-          backgroundImage: (photoUrl != null && photoUrl.isNotEmpty)
-              ? NetworkImage(photoUrl)
-              : null, // If null, show the child icon below
-          child: (photoUrl == null || photoUrl.isEmpty)
-              ? const Icon(Icons.person,
-                  color: AppColors.primaryColor) // Default fallback icon
-              : null,
+        child: ClipOval(
+          child: Container(
+            color: AppColors.veryLightPrimaryColor,
+            child: (photoUrl != null && photoUrl.isNotEmpty) 
+              ? Image.network(
+                  photoUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: AppColors.primaryColor)
+                )
+              : const Icon(Icons.person, color: AppColors.primaryColor),
+          ),
         ),
       ),
     );

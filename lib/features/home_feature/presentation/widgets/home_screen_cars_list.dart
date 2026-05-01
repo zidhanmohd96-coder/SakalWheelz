@@ -14,6 +14,10 @@ import 'package:car_rental_app/features/car_feature/presentation/screens/car_det
 import 'package:car_rental_app/features/car_feature/presentation/screens/cars_list_screen.dart';
 import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
 import 'package:flutter/material.dart';
+import 'package:animate_do/animate_do.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:car_rental_app/features/car_feature/presentation/bloc/car_cubit.dart';
+import 'package:shimmer/shimmer.dart';
 
 class HomeScreenCarsList extends StatelessWidget {
   const HomeScreenCarsList({super.key});
@@ -63,19 +67,50 @@ class HomeScreenCarsList extends StatelessWidget {
                 )
               ],
             ),
-            SizedBox(
-              height: 130.0,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: carsList.length,
-                shrinkWrap: true,
-                itemBuilder: (final context, final carIndex) {
-                  final car = carsList[carIndex];
-                  return Padding(
-                    padding: const EdgeInsets.only(
-                      left: Dimens.largePadding,
+            BlocBuilder<CarCubit, CarState>(
+              builder: (context, state) {
+                if (state is CarLoading) {
+                  return SizedBox(
+                    height: 130.0,
+                    child: Shimmer.fromColors(
+                      baseColor: AppColors.cardColor,
+                      highlightColor: Colors.grey.withOpacity(0.2),
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: 3,
+                        itemBuilder: (context, index) => Padding(
+                          padding: const EdgeInsets.only(left: 16.0),
+                          child: Container(
+                            width: 250,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    child: Container(
+                  );
+                } else if (state is CarError) {
+                  return const Center(child: Text("Failed to load cars", style: TextStyle(color: Colors.red)));
+                } else if (state is CarLoaded) {
+                  final carsListData = state.cars;
+                  return SizedBox(
+                    height: 130.0,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: carsListData.length,
+                      shrinkWrap: true,
+                      itemBuilder: (final context, final carIndex) {
+                        final car = carsListData[carIndex];
+                  return FadeInRight(
+                    delay: Duration(milliseconds: carIndex * 150),
+                    duration: const Duration(milliseconds: 600),
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: Dimens.largePadding,
+                      ),
+                      child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.cardColor,
                         borderRadius: BorderRadius.circular(
@@ -97,7 +132,7 @@ class HomeScreenCarsList extends StatelessWidget {
                                   spacing: Dimens.padding,
                                   children: [
                                     Text(
-                                      '${car['brand']} ${car['name']}',
+                                      '${car.brand} ${car.name}',
                                       style: const TextStyle(
                                         color: AppColors.whiteColor,
                                       ),
@@ -106,7 +141,7 @@ class HomeScreenCarsList extends StatelessWidget {
                                       spacing: Dimens.smallPadding,
                                       children: [
                                         AppTitleText(
-                                          '\$ ${car['price']}',
+                                          '\$ ${car.price}',
                                           fontSize: 16.0,
                                         ),
                                         const AppSubtitleText('per day'),
@@ -123,11 +158,11 @@ class HomeScreenCarsList extends StatelessWidget {
                                 child: SizedBox(
                                   height: 64.0,
                                   child: Image.asset(
-                                    (car['images'] as List).isNotEmpty
-                                        ? car['images'][0]
-                                        : Assets.images.banner1.path,
-                                    fit: BoxFit.contain,
-                                  ),
+                                      (car.images).isNotEmpty
+                                          ? car.images[0]
+                                          : Assets.images.banner1.path,
+                                      fit: BoxFit.contain,
+                                    ),
                                 ),
                               ),
                             ],
@@ -147,7 +182,7 @@ class HomeScreenCarsList extends StatelessWidget {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            BookingScreen(carData: car),
+                                            BookingScreen(carData: car.toJson()),
                                       ),
                                     );
                                   },
@@ -165,7 +200,7 @@ class HomeScreenCarsList extends StatelessWidget {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => CarDetailsScreen(
-                                          carData: car,
+                                          carData: car.toJson(),
                                         ),
                                       ),
                                     );
@@ -177,10 +212,15 @@ class HomeScreenCarsList extends StatelessWidget {
                         ],
                       ),
                     ),
+                  ),
                   );
                 },
               ),
-            ),
+            );
+          }
+          return const SizedBox();
+        },
+      ),
           ],
         );
       },

@@ -29,7 +29,7 @@ class _HostMainScreenState extends State<HostMainScreen> {
       body: _tabs[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: AppColors.cardColor,
-        selectedItemColor: Colors.blueAccent, // Host Theme Color
+        selectedItemColor: AppColors.primaryColor,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,

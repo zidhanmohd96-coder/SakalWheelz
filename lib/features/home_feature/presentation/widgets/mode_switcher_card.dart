@@ -31,24 +31,21 @@ class ModeSwitcherCard extends StatelessWidget {
         Color color;
         VoidCallback onTap;
 
-        if (isCustomerMode) {
-          // --- CASE A: Currently Customer ---
-          if (hasMultipleRoles) {
-            // User is BOTH -> Generic "Switch Mode" that opens a selector
-            title = "Switch Professional Mode";
-            subtitle = "Access Driver or Host dashboard";
-            icon = Icons.swap_vertical_circle;
-            color = Colors.purpleAccent;
-            onTap = () => _showModeSelector(context, roleManager);
-          } else if (roleManager.isDriver) {
-            // User is ONLY Driver
+        if (hasMultipleRoles) {
+          // User has both -> Always show generic Switch Mode to open selector
+          title = "Switch Professional Mode";
+          subtitle = "Current: ${modeName(roleManager.currentMode)}";
+          icon = Icons.swap_vertical_circle;
+          color = Colors.purpleAccent;
+          onTap = () => _showModeSelector(context, roleManager);
+        } else if (isCustomerMode) {
+          if (roleManager.isDriver) {
             title = "Switch to Driver Mode";
             subtitle = "Manage trips & earnings";
             icon = Icons.drive_eta;
             color = Colors.orangeAccent;
             onTap = () => _switch(context, roleManager, AppMode.driver);
           } else {
-            // User is ONLY Host
             title = "Switch to Host Mode";
             subtitle = "List cars & manage rentals";
             icon = Icons.garage;
@@ -56,8 +53,7 @@ class ModeSwitcherCard extends StatelessWidget {
             onTap = () => _switch(context, roleManager, AppMode.host);
           }
         } else {
-          // --- CASE B: Currently Driver or Host ---
-          // Always switch back to Customer
+          // User only has ONE extra role and is currently IN it.
           title = "Switch to Customer Mode";
           subtitle = "Find cars to rent";
           icon = Icons.search;
@@ -127,6 +123,13 @@ class ModeSwitcherCard extends StatelessWidget {
     );
   }
 
+  // --- Helper: Get Mode Name ---
+  String modeName(AppMode mode) {
+    if (mode == AppMode.host) return "Host Mode";
+    if (mode == AppMode.driver) return "Driver Mode";
+    return "Customer Mode";
+  }
+
   // --- Helper: Perform Switch with Feedback ---
   void _switch(BuildContext context, RoleManager manager, AppMode mode) {
     manager.switchMode(mode);
@@ -155,8 +158,22 @@ class ModeSwitcherCard extends StatelessWidget {
             children: [
               const AppTitleText("Select Mode", fontSize: 18),
               const SizedBox(height: 24),
+              // Customer Option (Always available in selector)
+              if (manager.currentMode != AppMode.customer)
+                ListTile(
+                  leading:
+                      const Icon(Icons.search, color: AppColors.primaryColor),
+                  title: const Text("Customer Mode",
+                      style: TextStyle(color: Colors.white)),
+                  subtitle: const Text("Rent cars",
+                      style: TextStyle(color: Colors.grey)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _switch(context, manager, AppMode.customer);
+                  },
+                ),
               // Driver Option
-              if (manager.isDriver)
+              if (manager.isDriver && manager.currentMode != AppMode.driver)
                 ListTile(
                   leading:
                       const Icon(Icons.drive_eta, color: Colors.orangeAccent),
@@ -170,7 +187,7 @@ class ModeSwitcherCard extends StatelessWidget {
                   },
                 ),
               // Host Option
-              if (manager.isHost)
+              if (manager.isHost && manager.currentMode != AppMode.host)
                 ListTile(
                   leading: const Icon(Icons.garage, color: Colors.blueAccent),
                   title: const Text("Host Mode",

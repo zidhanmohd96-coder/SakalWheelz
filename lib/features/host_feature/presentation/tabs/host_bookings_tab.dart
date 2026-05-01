@@ -49,9 +49,9 @@ class HostBookingsTab extends StatelessWidget {
                 child: Icon(Icons.person, color: Colors.white),
               ),
               const SizedBox(width: 12),
-              Column(
+              const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text("Rahul Menon",
                       style: TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold)),
@@ -70,21 +70,20 @@ class HostBookingsTab extends StatelessWidget {
           const Divider(color: Colors.white10, height: 24),
 
           // Trip Details
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-              const SizedBox(width: 8),
-              const Text("Oct 24 - Oct 26 (2 Days)",
+              Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+              SizedBox(width: 8),
+              Text("Oct 24 - Oct 26 (2 Days)",
                   style: TextStyle(color: Colors.white70)),
             ],
           ),
           const SizedBox(height: 8),
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.directions_car, size: 16, color: Colors.grey),
-              const SizedBox(width: 8),
-              const Text("Toyota Fortuner",
-                  style: TextStyle(color: Colors.white70)),
+              Icon(Icons.directions_car, size: 16, color: Colors.grey),
+              SizedBox(width: 8),
+              Text("Toyota Fortuner", style: TextStyle(color: Colors.white70)),
             ],
           ),
           const SizedBox(height: 16),

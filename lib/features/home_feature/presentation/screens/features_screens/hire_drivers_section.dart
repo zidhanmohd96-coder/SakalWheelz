@@ -101,15 +101,17 @@ class HireDriversSection extends StatelessWidget {
                   child: Row(
                     children: [
                       // Driver Image
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
+                      ClipOval(
+                        child: Container(
+                          width: 50,
+                          height: 50,
                           color: Colors.grey[800],
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: NetworkImage(driver['image']),
+                          child: Image.network(
+                            driver['image'],
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.person, color: Colors.white, size: 30);
+                            },
                           ),
                         ),
                       ),

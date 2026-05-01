@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:car_rental_app/core/gen/assets.gen.dart';
 import 'package:car_rental_app/core/managers/role_manager.dart';
-import 'package:car_rental_app/core/providers/mode_provider.dart';
-import 'package:car_rental_app/features/home_feature/presentation/screens/home_screen.dart';
-import 'package:car_rental_app/features/host_feature/presentation/screens/host_home_screen.dart';
-import 'package:car_rental_app/features/host_feature/presentation/tabs/host_dashboard_tab.dart';
+import 'package:car_rental_app/features/home_feature/presentation/screens/root_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -77,11 +74,11 @@ class _SplashScreenState extends State<SplashScreen>
           print("⚠️ Error fetching user roles: $e");
         }
 
-        // 3. Navigate to MAIN WRAPPER (Not HomeScreen)
+        // 3. Navigate to RootScreen (handles role switching)
         if (mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            MaterialPageRoute(builder: (context) => const RootScreen()),
           );
         }
       } else {

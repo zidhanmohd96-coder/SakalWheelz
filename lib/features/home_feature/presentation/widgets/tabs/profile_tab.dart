@@ -1,3 +1,4 @@
+import 'package:car_rental_app/core/managers/role_manager.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/edit_profile_screen.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/faq_screen.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/feedback_screen.dart';
@@ -49,47 +50,52 @@ class ProfileTab extends StatelessWidget {
                         fontSize: 18,
                         fontWeight: FontWeight.bold)),
               ),
+
               const SizedBox(height: 15),
 
               // HOST CARD
-              _buildEarningCard(
-                context,
-                title: "Host",
-                subtitle: "List your vehicles and earn money",
-                icon: Icons.business,
-                features: [
-                  "List unlimited vehicles",
-                  "Set your own prices",
-                  "Digital agreements"
-                ],
-                btnText: "List Your Car",
-                color: Colors.blueAccent,
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (c) => const BecomeHostScreen())),
-              ),
+              RoleManager().currentMode != AppMode.host
+                  ? _buildEarningCard(
+                      context,
+                      title: "Host",
+                      subtitle: "List your vehicles and earn money",
+                      icon: Icons.business,
+                      features: [
+                        "List unlimited vehicles",
+                        "Set your own prices",
+                        "Digital agreements"
+                      ],
+                      btnText: "List Your Car",
+                      color: Colors.blueAccent,
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (c) => const BecomeHostScreen())),
+                    )
+                  : SizedBox.shrink(),
 
               const SizedBox(height: 16),
 
               // DRIVER CARD
-              _buildEarningCard(
-                context,
-                title: "Driver",
-                subtitle: "Offer your driving services",
-                icon: Icons.work_outline,
-                features: [
-                  "Accept ride requests",
-                  "Flexible working hours",
-                  "Instant payouts"
-                ],
-                btnText: "Register as Driver",
-                color: AppColors.primaryColor,
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (c) => const BecomeDriverScreen())),
-              ),
+              RoleManager().currentMode != AppMode.driver
+                  ? _buildEarningCard(
+                      context,
+                      title: "Driver",
+                      subtitle: "Offer your driving services",
+                      icon: Icons.work_outline,
+                      features: [
+                        "Accept ride requests",
+                        "Flexible working hours",
+                        "Instant payouts"
+                      ],
+                      btnText: "Register as Driver",
+                      color: AppColors.primaryColor,
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (c) => const BecomeDriverScreen())),
+                    )
+                  : SizedBox.shrink(),
               const SizedBox(height: 30),
               // ---------------------------------------------------------
 

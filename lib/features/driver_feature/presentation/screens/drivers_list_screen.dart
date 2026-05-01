@@ -85,16 +85,16 @@ class DriversListScreen extends StatelessWidget {
               child: Row(
                 children: [
                   // Profile Image
-                  Container(
-                    width: 90,
-                    height: 100,
-                    decoration: BoxDecoration(
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 90,
+                      height: 100,
                       color: Colors.grey[800],
-                      borderRadius: BorderRadius.circular(20),
-                      image: DecorationImage(
-                        // Safely handle image path
-                        image: NetworkImage(driver['image']),
+                      child: Image.network(
+                        driver['image'],
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: Colors.white, size: 40),
                       ),
                     ),
                   ),

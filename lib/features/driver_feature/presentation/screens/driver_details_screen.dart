@@ -205,17 +205,18 @@ class DriverDetailsScreen extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.primaryColor, width: 3),
         ),
-        child: CircleAvatar(
-          radius: 60,
-          backgroundColor: AppColors.veryLightPrimaryColor.withOpacity(0.3),
-          backgroundImage: NetworkImage(imageUrl),
-          child: imageUrl.isEmpty
-              ? const Icon(
-                  Icons.person,
-                  size: 60,
-                  color: AppColors.whiteColor,
-                )
-              : null,
-        ));
+        child: ClipOval(
+          child: Container(
+            width: 120,
+            height: 120,
+            color: AppColors.veryLightPrimaryColor.withOpacity(0.3),
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, size: 60, color: AppColors.whiteColor),
+            ),
+          ),
+        ),
+      );
   }
 }

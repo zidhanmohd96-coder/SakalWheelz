@@ -1,5 +1,5 @@
 import 'package:car_rental_app/features/authentication_feature/presentation/screens/user_registration_screen.dart';
-import 'package:car_rental_app/features/home_feature/presentation/screens/home_screen.dart';
+import 'package:car_rental_app/features/home_feature/presentation/screens/root_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +66,7 @@ class AuthGateService {
   static void _navigateToHome(BuildContext context) {
     Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const RootScreen()),
         (route) => false);
   }
 }
