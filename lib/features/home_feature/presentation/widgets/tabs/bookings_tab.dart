@@ -1,9 +1,12 @@
 import 'package:car_rental_app/core/theme/colors.dart';
 import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
-import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
+import 'package:car_rental_app/features/booking_feature/data/models/booking_model.dart';
+import 'package:car_rental_app/features/booking_feature/presentation/bloc/booking_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class BookingTab extends StatefulWidget {
   const BookingTab({super.key});
@@ -16,13 +19,14 @@ class _BookingTabState extends State<BookingTab>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _searchQuery = "";
-  bool _isRefreshing = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // Load bookings from Firestore
+    context.read<BookingCubit>().loadUserBookings();
   }
 
   // --- LOGIC: Cancel Booking ---
@@ -47,17 +51,8 @@ class _BookingTabState extends State<BookingTab>
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() {
-                myBookings.remove(booking);
-                myBookings.add(BookingModel(
-                  id: booking.id,
-                  car: booking.car,
-                  startDate: booking.startDate,
-                  endDate: booking.endDate,
-                  status: 'Cancelled',
-                  totalPrice: booking.totalPrice,
-                ));
-              });
+              // Cancel in Firestore
+              context.read<BookingCubit>().cancelBooking(booking.id);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                     content: Text("Booking Cancelled"),
@@ -105,7 +100,7 @@ class _BookingTabState extends State<BookingTab>
               ),
               child: Column(
                 children: [
-                  Text("ID: ${booking.id}",
+                  Text("ID: ${booking.id.substring(0, 8).toUpperCase()}",
                       style: const TextStyle(
                           color: Colors.black54,
                           fontWeight: FontWeight.bold,
@@ -116,7 +111,7 @@ class _BookingTabState extends State<BookingTab>
                   const Divider(color: Colors.black12),
                   const SizedBox(height: 10),
                   _buildTicketRow(
-                      "Car", "${booking.car['brand']} ${booking.car['name']}"),
+                      "Car", "${booking.carBrand} ${booking.carName}"),
                   const SizedBox(height: 8),
                   _buildTicketRow("Start",
                       DateFormat('dd MMM, hh:mm a').format(booking.startDate)),
@@ -163,12 +158,6 @@ class _BookingTabState extends State<BookingTab>
                 fontSize: 15)),
       ],
     );
-  }
-
-  Future<void> _refreshData() async {
-    setState(() => _isRefreshing = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isRefreshing = false);
   }
 
   @override
@@ -229,29 +218,77 @@ class _BookingTabState extends State<BookingTab>
           ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildBookingList(statusFilter: 'Active'),
-          _buildBookingList(statusFilter: 'Completed'),
-        ],
+      body: BlocBuilder<BookingCubit, BookingState>(
+        builder: (context, state) {
+          if (state is BookingLoading) {
+            return _buildShimmerLoading();
+          }
+
+          if (state is BookingError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 60, color: Colors.redAccent),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Failed to load bookings",
+                    style: TextStyle(color: Colors.grey.shade400, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: () =>
+                        context.read<BookingCubit>().loadUserBookings(),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor),
+                    child: const Text("Retry",
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (state is BookingLoaded) {
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                _buildBookingList(
+                    bookings: state.bookings, statusFilter: 'Active'),
+                _buildBookingList(
+                    bookings: state.bookings, statusFilter: 'Completed'),
+              ],
+            );
+          }
+
+          // Initial state — trigger load
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              _buildEmptyState('active'),
+              _buildEmptyState('completed'),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildBookingList({required String statusFilter}) {
-    final filteredList = myBookings.where((b) {
+  Widget _buildBookingList(
+      {required List<BookingModel> bookings, required String statusFilter}) {
+    final filteredList = bookings.where((b) {
       bool statusMatch;
       if (statusFilter == 'Active') {
-        statusMatch = b.status == 'Active';
+        statusMatch = b.status == 'Active' || b.status == 'Confirmed';
       } else {
         statusMatch = b.status == 'Completed' || b.status == 'Cancelled';
       }
 
       final searchMatch =
-          b.car['name'].toString().toLowerCase().contains(_searchQuery) ||
+          b.carName.toLowerCase().contains(_searchQuery) ||
               b.id.toLowerCase().contains(_searchQuery) ||
-              b.car['brand'].toString().toLowerCase().contains(_searchQuery);
+              b.carBrand.toLowerCase().contains(_searchQuery);
 
       return statusMatch && searchMatch;
     }).toList();
@@ -259,24 +296,12 @@ class _BookingTabState extends State<BookingTab>
     filteredList.sort((a, b) => b.startDate.compareTo(a.startDate));
 
     if (filteredList.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.airplane_ticket_outlined,
-                size: 80, color: Colors.grey.shade800),
-            const SizedBox(height: 16),
-            Text(
-              "No ${statusFilter.toLowerCase()} trips found",
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-            ),
-          ],
-        ),
-      );
+      return _buildEmptyState(statusFilter.toLowerCase());
     }
 
     return RefreshIndicator(
-      onRefresh: _refreshData,
+      onRefresh: () async =>
+          context.read<BookingCubit>().loadUserBookings(),
       color: AppColors.primaryColor,
       backgroundColor: AppColors.cardColor,
       child: ListView.separated(
@@ -290,10 +315,31 @@ class _BookingTabState extends State<BookingTab>
     );
   }
 
+  Widget _buildEmptyState(String type) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.airplane_ticket_outlined,
+              size: 80, color: Colors.grey.shade800),
+          const SizedBox(height: 16),
+          Text(
+            "No $type trips found",
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Book a car to see your trips here!",
+            style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBookingCard(BookingModel booking) {
-    final List<dynamic> images = booking.car['images'] ?? [];
     final String imagePath =
-        images.isNotEmpty ? images[0].toString() : 'assets/images/banner1.png';
+        booking.carImage.isNotEmpty ? booking.carImage : 'assets/images/banner1.png';
 
     // Status Logic
     Color statusColor;
@@ -302,6 +348,7 @@ class _BookingTabState extends State<BookingTab>
 
     switch (booking.status) {
       case 'Active':
+      case 'Confirmed':
         statusColor = Colors.green;
         statusIcon = Icons.schedule;
         break;
@@ -310,6 +357,7 @@ class _BookingTabState extends State<BookingTab>
         statusIcon = Icons.check_circle;
         break;
       case 'Cancelled':
+      case 'Rejected':
         statusColor = Colors.red;
         statusIcon = Icons.cancel;
         break;
@@ -320,14 +368,15 @@ class _BookingTabState extends State<BookingTab>
 
     // Time Text Logic
     String timeText = "";
-    if (booking.status == 'Active') {
+    if (booking.status == 'Active' || booking.status == 'Confirmed') {
       final days = booking.startDate.difference(DateTime.now()).inDays;
       if (days == 0) {
         timeText = "Starts Today";
-      } else if (days > 0)
+      } else if (days > 0) {
         timeText = "In $days days";
-      else
+      } else {
         timeText = "In Progress";
+      }
     } else {
       timeText = DateFormat('MMM dd').format(booking.endDate);
     }
@@ -410,12 +459,25 @@ class _BookingTabState extends State<BookingTab>
                 // Car Image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    imagePath,
-                    width: 90,
-                    height: 90,
-                    fit: BoxFit.cover,
-                  ),
+                  child: imagePath.startsWith('http')
+                      ? Image.network(
+                          imagePath,
+                          width: 90,
+                          height: 90,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                              width: 90,
+                              height: 90,
+                              color: Colors.grey.shade800,
+                              child: const Icon(Icons.directions_car,
+                                  color: Colors.grey)),
+                        )
+                      : Image.asset(
+                          imagePath,
+                          width: 90,
+                          height: 90,
+                          fit: BoxFit.cover,
+                        ),
                 ),
                 const SizedBox(width: 16),
                 // Details
@@ -424,7 +486,7 @@ class _BookingTabState extends State<BookingTab>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "${booking.car['brand']} ${booking.car['name']}",
+                        "${booking.carBrand} ${booking.carName}",
                         style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -435,7 +497,7 @@ class _BookingTabState extends State<BookingTab>
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        "ID: ${booking.id}",
+                        "ID: ${booking.id.substring(0, 8).toUpperCase()}",
                         style: TextStyle(
                             color: Colors.grey.shade500,
                             fontSize: 12,
@@ -452,7 +514,8 @@ class _BookingTabState extends State<BookingTab>
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold),
                           ),
-                          if (booking.status == 'Active')
+                          if (booking.status == 'Active' ||
+                              booking.status == 'Confirmed')
                             Text(
                               timeText,
                               style: TextStyle(
@@ -470,12 +533,13 @@ class _BookingTabState extends State<BookingTab>
           ),
 
           // --- CARD FOOTER (Buttons) ---
-          if (booking.status != 'Cancelled')
+          if (booking.status != 'Cancelled' && booking.status != 'Rejected')
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Row(
                 children: [
-                  if (booking.status == 'Active') ...[
+                  if (booking.status == 'Active' ||
+                      booking.status == 'Confirmed') ...[
                     Expanded(
                         child: _buildActionButton(
                             "Cancel",
@@ -534,6 +598,28 @@ class _BookingTabState extends State<BookingTab>
         ),
         child: Text(title, style: const TextStyle(fontSize: 13)),
       ),
+    );
+  }
+
+  /// Shimmer loading placeholder while bookings stream is loading
+  Widget _buildShimmerLoading() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: 3,
+      itemBuilder: (context, index) {
+        return Shimmer.fromColors(
+          baseColor: Colors.grey.shade800,
+          highlightColor: Colors.grey.shade700,
+          child: Container(
+            height: 180,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              color: AppColors.cardColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+        );
+      },
     );
   }
 }

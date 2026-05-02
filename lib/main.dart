@@ -8,6 +8,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:car_rental_app/features/car_feature/data/repositories/car_repository.dart';
 import 'package:car_rental_app/features/car_feature/presentation/bloc/car_cubit.dart';
+import 'package:car_rental_app/features/booking_feature/data/repositories/booking_repository.dart';
+import 'package:car_rental_app/features/booking_feature/presentation/bloc/booking_cubit.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -30,8 +32,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => CarCubit(carRepository),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => CarCubit(carRepository)),
+        BlocProvider(create: (context) => BookingCubit(BookingRepository())),
+      ],
       child: MaterialApp(
         title: 'SakalWheels Car Rental',
         debugShowCheckedModeBanner: false,

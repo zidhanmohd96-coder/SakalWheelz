@@ -3,7 +3,7 @@ import 'package:car_rental_app/core/theme/dimens.dart';
 import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_scaffold.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
-import 'package:car_rental_app/features/home_feature/presentation/screens/home_screen.dart'; // Ensure this points to your actual Home
+import 'package:car_rental_app/features/home_feature/presentation/screens/root_screen.dart';
 import 'package:car_rental_app/features/booking_feature/presentation/screens/delivery_tracking_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +33,7 @@ class BookingSuccessScreen extends StatelessWidget {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () => _goToHome(context),
+            onPressed: () => _goToMyTrips(context),
             icon: const Icon(Icons.close, color: Colors.white),
           )
         ],
@@ -120,7 +120,7 @@ class BookingSuccessScreen extends StatelessWidget {
                   side: const BorderSide(color: AppColors.primaryColor),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // Dimens roughly
                 ),
-                onPressed: () => _goToHome(context),
+                onPressed: () => _goToMyTrips(context),
                 child: const Text("Go to My Trips", style: TextStyle(color: AppColors.primaryColor, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
@@ -151,11 +151,10 @@ class BookingSuccessScreen extends StatelessWidget {
     );
   }
 
-  void _goToHome(BuildContext context) {
+  void _goToMyTrips(BuildContext context) {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        // Index 2 = Bookings Tab
-        builder: (context) => const HomeScreen(initialIndex: 2),
+        builder: (context) => const RootScreen(),
       ),
       (Route<dynamic> route) => false,
     );

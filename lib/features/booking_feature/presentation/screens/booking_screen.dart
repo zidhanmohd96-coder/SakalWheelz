@@ -5,9 +5,13 @@ import 'package:car_rental_app/core/widgets/app_scaffold.dart';
 import 'package:car_rental_app/core/widgets/app_space.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
 import 'package:car_rental_app/features/booking_feature/presentation/screens/booking_success_screen.dart';
-import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart'; // Ensure sampleDrivers is here
+import 'package:car_rental_app/features/booking_feature/data/models/booking_model.dart' as models;
+import 'package:car_rental_app/features/booking_feature/presentation/bloc/booking_cubit.dart';
+import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -729,37 +733,82 @@ class _BookingScreenState extends State<BookingScreen> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor),
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context); // Close dialog
                   ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("License Verified!")));
+                      const SnackBar(content: Text("License Verified! Creating booking...")));
 
-                  // Add to Bookings and Navigate
-                  myBookings.insert(
-                      0,
-                      BookingModel(
-                        id: bookingId,
-                        car: widget.carData,
-                        startDate: _startDate!,
-                        endDate: _endDate ??
-                            _startDate!.add(const Duration(days: 1)),
-                        status: 'Active',
-                        totalPrice: price,
-                      ));
+                  // Get current user
+                  final user = FirebaseAuth.instance.currentUser;
+                  final userId = user?.uid ?? 'anonymous';
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BookingSuccessScreen(
-                        carData: widget.carData,
-                        bookingId: bookingId,
-                        startDate: _startDate!,
-                        endDate: _endDate ??
-                            _startDate!.add(const Duration(days: 1)),
-                        totalPrice: price,
-                      ),
-                    ),
+                  // Extract car image safely
+                  final images = widget.carData['images'] as List? ?? [];
+                  final carImage = images.isNotEmpty ? images[0].toString() : '';
+
+                  // Extract host info
+                  final host = widget.carData['host'] as Map<String, dynamic>? ?? {};
+
+                  // Calculate days
+                  final endDate = _endDate ?? _startDate!.add(const Duration(days: 1));
+                  final rentalDays = endDate.difference(_startDate!).inDays + 1;
+
+                  // Build the booking model
+                  final booking = models.BookingModel(
+                    id: '', // Will be set by Firestore
+                    userId: userId,
+                    carId: widget.carData['id']?.toString() ?? '',
+                    carBrand: widget.carData['brand']?.toString() ?? '',
+                    carName: widget.carData['name']?.toString() ?? '',
+                    carImage: carImage,
+                    carType: widget.carData['type']?.toString() ?? '',
+                    carTransmission: widget.carData['transmission']?.toString() ?? '',
+                    hostName: host['name']?.toString() ?? '',
+                    hostPhone: host['phone']?.toString() ?? '',
+                    startDate: _startDate!,
+                    endDate: endDate,
+                    pickupTime: _pickupTime.format(this.context),
+                    dropoffTime: _dropoffTime.format(this.context),
+                    pickupLocation: _pickupLocation,
+                    dropoffLocation: _dropoffLocation,
+                    hasDriver: _isWithDriver,
+                    driverName: _selectedDriver?['name']?.toString(),
+                    driverCost: _isWithDriver
+                        ? ((_selectedDriver?['price'] ?? 0) is int
+                            ? (_selectedDriver!['price'] as int).toDouble()
+                            : (_selectedDriver?['price'] ?? 0.0)) * rentalDays
+                        : 0.0,
+                    hasPremiumInsurance: _isPremiumInsurance,
+                    insuranceCost: _isPremiumInsurance ? 15.0 * rentalDays : 0.0,
+                    promoCode: _isPromoApplied ? _promoController.text : null,
+                    promoDiscount: _isPromoApplied ? 0.10 : 0.0,
+                    basePricePerDay: (widget.carData['price'] is int)
+                        ? (widget.carData['price'] as int).toDouble()
+                        : (widget.carData['price'] as double),
+                    rentalDays: rentalDays,
+                    totalPrice: price,
+                    status: 'Active',
+                    createdAt: DateTime.now(),
                   );
+
+                  // Save to Firestore via BookingCubit
+                  final cubit = this.context.read<BookingCubit>();
+                  final firestoreId = await cubit.createBooking(booking);
+
+                  if (mounted && firestoreId != null) {
+                    Navigator.push(
+                      this.context,
+                      MaterialPageRoute(
+                        builder: (context) => BookingSuccessScreen(
+                          carData: widget.carData,
+                          bookingId: firestoreId.substring(0, 8).toUpperCase(),
+                          startDate: _startDate!,
+                          endDate: endDate,
+                          totalPrice: price,
+                        ),
+                      ),
+                    );
+                  }
                 },
                 child: const Text("Upload & Verify",
                     style: TextStyle(color: Colors.black)),

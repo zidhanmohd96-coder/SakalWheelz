@@ -87,6 +87,8 @@ class CarCard extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: AppColors.whiteColor,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
 
           const SizedBox(height: 8),
@@ -94,10 +96,10 @@ class CarCard extends StatelessWidget {
           // 4. FEATURES TAGS (Static for now, or use carData['transmission'])
           Row(
             children: [
-              _buildFeatureTag(Icons.speed, carData['transmission'] ?? "Auto"),
+              Flexible(child: _buildFeatureTag(Icons.speed, carData['transmission'] ?? "Auto")),
               const SizedBox(width: 10),
-              _buildFeatureTag(
-                  Icons.local_gas_station, carData['fuel'] ?? "Petrol"),
+              Flexible(child: _buildFeatureTag(
+                  Icons.local_gas_station, carData['fuel'] ?? "Petrol")),
             ],
           ),
 

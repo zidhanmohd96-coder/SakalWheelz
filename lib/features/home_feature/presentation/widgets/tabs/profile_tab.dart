@@ -72,7 +72,7 @@ class ProfileTab extends StatelessWidget {
                           MaterialPageRoute(
                               builder: (c) => const BecomeHostScreen())),
                     )
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
 
               const SizedBox(height: 16),
 
@@ -95,7 +95,7 @@ class ProfileTab extends StatelessWidget {
                           MaterialPageRoute(
                               builder: (c) => const BecomeDriverScreen())),
                     )
-                  : SizedBox.shrink(),
+                  : const SizedBox.shrink(),
               const SizedBox(height: 30),
               // ---------------------------------------------------------
 
@@ -185,18 +185,21 @@ class ProfileTab extends StatelessWidget {
                 child: Icon(icon, color: color, size: 28),
               ),
               const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
-                  Text(subtitle,
-                      style:
-                          TextStyle(color: Colors.grey.shade400, fontSize: 12)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                    Text(subtitle,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                  ],
+                ),
               )
             ],
           ),
