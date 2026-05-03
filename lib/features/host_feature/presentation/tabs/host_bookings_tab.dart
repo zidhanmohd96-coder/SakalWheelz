@@ -28,10 +28,8 @@ class _HostBookingsTabState extends State<HostBookingsTab> {
   Future<void> _loadHostName() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists && mounted) {
         setState(() {
           _hostName = doc.data()?['full_name'] ?? '';
@@ -136,8 +134,7 @@ class _HostBookingsTabState extends State<HostBookingsTab> {
                     ),
                     Text(
                       _getTimeAgo(booking.createdAt),
-                      style:
-                          const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
                 ),
@@ -146,14 +143,14 @@ class _HostBookingsTabState extends State<HostBookingsTab> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text("\$${booking.totalPrice.toStringAsFixed(0)}",
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: AppColors.primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16)),
                   Container(
                     margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
@@ -261,8 +258,7 @@ class _HostBookingsTabState extends State<HostBookingsTab> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("Booking Accepted!"),
-            backgroundColor: Colors.green),
+            content: Text("Booking Accepted!"), backgroundColor: Colors.green),
       );
     }
   }

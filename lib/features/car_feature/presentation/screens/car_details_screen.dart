@@ -289,7 +289,6 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
   // --- UPDATED BOTTOM SHEET ---
   Widget _buildBottomBookingBar() {
     return Container(
-      height: 137,
       decoration: BoxDecoration(
         color: AppColors.cardColor,
         borderRadius: BorderRadius.circular(
@@ -298,6 +297,7 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
       ),
       margin: const EdgeInsets.all(Dimens.largePadding),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
             padding: const EdgeInsets.all(

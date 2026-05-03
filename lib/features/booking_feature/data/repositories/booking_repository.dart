@@ -58,6 +58,21 @@ class BookingRepository {
     });
   }
 
+  /// Real-time stream of bookings where the driver name matches (for Driver mode).
+  Stream<List<BookingModel>> getDriverBookings(String driverName) {
+    return _bookingsRef
+        .where('driver_name', isEqualTo: driverName)
+        .snapshots()
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => BookingModel.fromJson(
+              doc.data() as Map<String, dynamic>, doc.id))
+          .toList();
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
+    });
+  }
+
   /// One-time fetch of a single booking by ID.
   Future<BookingModel?> getBookingById(String bookingId) async {
     try {

@@ -639,7 +639,6 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Widget _buildBottomPaymentBar(double price, int days) {
     return Container(
-      height: 110,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.cardColor,
@@ -676,7 +675,7 @@ class _BookingScreenState extends State<BookingScreen> {
           const SizedBox(width: 40),
           Expanded(
             child: SizedBox(
-              height: 94,
+              height: 56, // reduced from 94 to fit properly
               child: AppButton(
                 title: "Confirm Booking",
                 onPressed: () {

@@ -74,71 +74,75 @@ class _BookingTabState extends State<BookingTab>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height: 600,
         decoration: const BoxDecoration(
           color: AppColors.backgroundColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-                width: 40,
-                height: 4,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: Colors.grey.shade800,
+                      borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 20),
+              const AppTitleText("E-Ticket", fontSize: 22),
+              const SizedBox(height: 20),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                    color: Colors.grey.shade800,
-                    borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
-            const AppTitleText("E-Ticket", fontSize: 22),
-            const SizedBox(height: 20),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    Text("ID: ${booking.id.substring(0, 8).toUpperCase()}",
+                        style: const TextStyle(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1)),
+                    const SizedBox(height: 20),
+                    const Icon(Icons.qr_code_2, size: 120, color: Colors.black),
+                    const SizedBox(height: 20),
+                    const Divider(color: Colors.black12),
+                    const SizedBox(height: 10),
+                    _buildTicketRow(
+                        "Car", "${booking.carBrand} ${booking.carName}"),
+                    const SizedBox(height: 8),
+                    _buildTicketRow(
+                        "Start",
+                        DateFormat('dd MMM, hh:mm a')
+                            .format(booking.startDate)),
+                    const SizedBox(height: 8),
+                    _buildTicketRow("End",
+                        DateFormat('dd MMM, hh:mm a').format(booking.endDate)),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(8)),
+                      child: _buildTicketRow("Total Paid",
+                          "\$${booking.totalPrice.toStringAsFixed(0)}",
+                          isBold: true, color: Colors.green.shade800),
+                    ),
+                  ],
+                ),
               ),
-              child: Column(
-                children: [
-                  Text("ID: ${booking.id.substring(0, 8).toUpperCase()}",
-                      style: const TextStyle(
-                          color: Colors.black54,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1)),
-                  const SizedBox(height: 20),
-                  const Icon(Icons.qr_code_2, size: 120, color: Colors.black),
-                  const SizedBox(height: 20),
-                  const Divider(color: Colors.black12),
-                  const SizedBox(height: 10),
-                  _buildTicketRow(
-                      "Car", "${booking.carBrand} ${booking.carName}"),
-                  const SizedBox(height: 8),
-                  _buildTicketRow("Start",
-                      DateFormat('dd MMM, hh:mm a').format(booking.startDate)),
-                  const SizedBox(height: 8),
-                  _buildTicketRow("End",
-                      DateFormat('dd MMM, hh:mm a').format(booking.endDate)),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(8)),
-                    child: _buildTicketRow("Total Paid",
-                        "\$${booking.totalPrice.toStringAsFixed(0)}",
-                        isBold: true, color: Colors.green.shade800),
-                  ),
-                ],
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: AppButton(
+                    title: "Download PDF",
+                    onPressed: () => Navigator.pop(context)),
               ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: AppButton(
-                  title: "Download PDF",
-                  onPressed: () => Navigator.pop(context)),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -285,10 +289,9 @@ class _BookingTabState extends State<BookingTab>
         statusMatch = b.status == 'Completed' || b.status == 'Cancelled';
       }
 
-      final searchMatch =
-          b.carName.toLowerCase().contains(_searchQuery) ||
-              b.id.toLowerCase().contains(_searchQuery) ||
-              b.carBrand.toLowerCase().contains(_searchQuery);
+      final searchMatch = b.carName.toLowerCase().contains(_searchQuery) ||
+          b.id.toLowerCase().contains(_searchQuery) ||
+          b.carBrand.toLowerCase().contains(_searchQuery);
 
       return statusMatch && searchMatch;
     }).toList();
@@ -300,8 +303,7 @@ class _BookingTabState extends State<BookingTab>
     }
 
     return RefreshIndicator(
-      onRefresh: () async =>
-          context.read<BookingCubit>().loadUserBookings(),
+      onRefresh: () async => context.read<BookingCubit>().loadUserBookings(),
       color: AppColors.primaryColor,
       backgroundColor: AppColors.cardColor,
       child: ListView.separated(
@@ -338,8 +340,9 @@ class _BookingTabState extends State<BookingTab>
   }
 
   Widget _buildBookingCard(BookingModel booking) {
-    final String imagePath =
-        booking.carImage.isNotEmpty ? booking.carImage : 'assets/images/banner1.png';
+    final String imagePath = booking.carImage.isNotEmpty
+        ? booking.carImage
+        : 'assets/images/banner1.png';
 
     // Status Logic
     Color statusColor;

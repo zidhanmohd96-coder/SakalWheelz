@@ -26,109 +26,118 @@ class BookingSuccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      // Prevent going back to the form
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        automaticallyImplyLeading: false,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () => _goToMyTrips(context),
-            icon: const Icon(Icons.close, color: Colors.white),
-          )
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Dimens.largePadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // 1. Success Icon (Animated scale effect could be added here)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child:
-                  const Icon(Icons.check_circle, color: Colors.green, size: 80),
-            ),
-            const SizedBox(height: 24),
-
-            const AppTitleText("Booking Confirmed!", fontSize: 24),
-            const SizedBox(height: 8),
-            Text(
-              "You are all set to drive the ${carData['brand']}.",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-            ),
-
-            const SizedBox(height: 40),
-
-            // 2. Receipt Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.cardColor,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: Column(
-                children: [
-                  _buildReceiptRow("Booking ID", bookingId, isBold: true),
-                  const Divider(color: Colors.white10, height: 30),
-                  _buildReceiptRow(
-                      "Car", "${carData['brand']} ${carData['name']}"),
-                  const SizedBox(height: 12),
-                  _buildReceiptRow("Pickup",
-                      "${startDate.day}/${startDate.month}/${startDate.year}"),
-                  const SizedBox(height: 12),
-                  _buildReceiptRow("Drop-off",
-                      "${endDate.day}/${endDate.month}/${endDate.year}"),
-                  const Divider(color: Colors.white10, height: 30),
-                  _buildReceiptRow(
-                      "Total Paid", "\$${totalPrice.toStringAsFixed(0)}",
-                      isHighlight: true),
-                ],
-              ),
-            ),
-
-            const Spacer(),
-
-            // 3. Action Buttons
-            SizedBox(
-              width: double.infinity,
-              height: 70,
-              child: AppButton(
-                title: "Track Delivery",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DeliveryTrackingScreen(carData: carData),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 70,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.primaryColor),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // Dimens roughly
-                ),
-                onPressed: () => _goToMyTrips(context),
-                child: const Text("Go to My Trips", style: TextStyle(color: AppColors.primaryColor, fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-            ),
-            const SizedBox(height: 30),
+        // Prevent going back to the form
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          automaticallyImplyLeading: false,
+          elevation: 0,
+          actions: [
+            IconButton(
+              onPressed: () => _goToMyTrips(context),
+              icon: const Icon(Icons.close, color: Colors.white),
+            )
           ],
         ),
-      ),
-    );
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding:
+                const EdgeInsets.symmetric(horizontal: Dimens.largePadding),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // 1. Success Icon (Animated scale effect could be added here)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check_circle,
+                      color: Colors.green, size: 80),
+                ),
+                const SizedBox(height: 24),
+
+                const AppTitleText("Booking Confirmed!", fontSize: 24),
+                const SizedBox(height: 8),
+                Text(
+                  "You are all set to drive the ${carData['brand']}.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                ),
+
+                const SizedBox(height: 40),
+
+                // 2. Receipt Card
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildReceiptRow("Booking ID", bookingId, isBold: true),
+                      const Divider(color: Colors.white10, height: 30),
+                      _buildReceiptRow(
+                          "Car", "${carData['brand']} ${carData['name']}"),
+                      const SizedBox(height: 12),
+                      _buildReceiptRow("Pickup",
+                          "${startDate.day}/${startDate.month}/${startDate.year}"),
+                      const SizedBox(height: 12),
+                      _buildReceiptRow("Drop-off",
+                          "${endDate.day}/${endDate.month}/${endDate.year}"),
+                      const Divider(color: Colors.white10, height: 30),
+                      _buildReceiptRow(
+                          "Total Paid", "\$${totalPrice.toStringAsFixed(0)}",
+                          isHighlight: true),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+
+                // 3. Action Buttons
+                SizedBox(
+                  width: double.infinity,
+                  height: 70,
+                  child: AppButton(
+                    title: "Track Delivery",
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DeliveryTrackingScreen(carData: carData),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 70,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primaryColor),
+                      shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(16)), // Dimens roughly
+                    ),
+                    onPressed: () => _goToMyTrips(context),
+                    child: const Text("Go to My Trips",
+                        style: TextStyle(
+                            color: AppColors.primaryColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 30),
+              ],
+            ),
+          ),
+        ));
   }
 
   Widget _buildReceiptRow(String label, String value,

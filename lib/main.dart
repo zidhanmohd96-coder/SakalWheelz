@@ -10,6 +10,8 @@ import 'package:car_rental_app/features/car_feature/data/repositories/car_reposi
 import 'package:car_rental_app/features/car_feature/presentation/bloc/car_cubit.dart';
 import 'package:car_rental_app/features/booking_feature/data/repositories/booking_repository.dart';
 import 'package:car_rental_app/features/booking_feature/presentation/bloc/booking_cubit.dart';
+import 'package:car_rental_app/features/driver_feature/data/repositories/driver_repository.dart';
+import 'package:car_rental_app/features/driver_feature/presentation/bloc/driver_cubit.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -23,12 +25,16 @@ void main() async {
   final carRepo = CarRepository();
   await carRepo.seedMockDataIfEmpty();
 
-  runApp(MyApp(carRepository: carRepo));
+  final driverRepo = DriverRepository();
+  await driverRepo.seedMockDriversIfEmpty();
+
+  runApp(MyApp(carRepository: carRepo, driverRepository: driverRepo));
 }
 
 class MyApp extends StatelessWidget {
   final CarRepository carRepository;
-  const MyApp({super.key, required this.carRepository});
+  final DriverRepository driverRepository;
+  const MyApp({super.key, required this.carRepository, required this.driverRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +42,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => CarCubit(carRepository)),
         BlocProvider(create: (context) => BookingCubit(BookingRepository())),
+        BlocProvider(create: (context) => DriverCubit(driverRepository)),
       ],
       child: MaterialApp(
         title: 'SakalWheels Car Rental',

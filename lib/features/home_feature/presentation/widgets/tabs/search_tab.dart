@@ -1,13 +1,12 @@
 import 'package:car_rental_app/core/theme/colors.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
+import 'package:car_rental_app/features/driver_feature/presentation/bloc/driver_cubit.dart';
 import 'package:car_rental_app/features/driver_feature/presentation/screens/driver_details_screen.dart';
 import 'package:car_rental_app/features/home_feature/presentation/widgets/car_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
-
-// ---------------- YOUR SAMPLE DATA ----------------
-
-// ---------------------------------------------------
+import 'package:car_rental_app/features/car_feature/presentation/bloc/car_cubit.dart';
 
 enum SearchType { vehicle, driver }
 
@@ -23,8 +22,7 @@ class _SearchTabState extends State<SearchTab> {
 
   // State Variables
   SearchType _selectedType = SearchType.vehicle;
-  List<int> _filteredCarIndexes = [];
-  List<int> _filteredDriverIndexes = [];
+  String _searchQuery = "";
 
   // --- VEHICLE FILTER STATES ---
   RangeValues _vehiclePriceRange = const RangeValues(0, 10000);
@@ -39,55 +37,11 @@ class _SearchTabState extends State<SearchTab> {
   @override
   void initState() {
     super.initState();
-    // Initialize with all data
-    _filteredCarIndexes = List.generate(brandAndNameOfCars.length, (i) => i);
-    _filteredDriverIndexes = List.generate(sampleDrivers.length, (i) => i);
   }
 
   void _runSearch(String query) {
     setState(() {
-      if (_selectedType == SearchType.vehicle) {
-        _filteredCarIndexes = [];
-        for (int i = 0; i < brandAndNameOfCars.length; i++) {
-          final car = brandAndNameOfCars[i];
-          final price = prices[i];
-          final name = "${car['brand']} ${car['name']}".toLowerCase();
-
-          final matchesQuery = name.contains(query.toLowerCase());
-          final matchesPrice = price >= _vehiclePriceRange.start &&
-              price <= _vehiclePriceRange.end;
-
-          // Note: In a real app, you would check car['transmission'] and car['fuel'] here.
-          // Since our sample data is simple, we only filter by Price and Query currently.
-
-          if (matchesQuery && matchesPrice) {
-            _filteredCarIndexes.add(i);
-          }
-        }
-      } else {
-        _filteredDriverIndexes = [];
-        for (int i = 0; i < sampleDrivers.length; i++) {
-          final driver = sampleDrivers[i];
-          final name = driver['name'].toString().toLowerCase();
-          final price = (driver['price'] as int).toDouble();
-          final category = driver['category'];
-          final rating = (driver['rating'] as double);
-
-          final matchesQuery = name.contains(query.toLowerCase());
-          final matchesPrice = price >= _driverPriceRange.start &&
-              price <= _driverPriceRange.end;
-          final matchesCategory = _selectedDriverCategory == null ||
-              category == _selectedDriverCategory;
-          final matchesRating = rating >= _minDriverRating;
-
-          if (matchesQuery &&
-              matchesPrice &&
-              matchesCategory &&
-              matchesRating) {
-            _filteredDriverIndexes.add(i);
-          }
-        }
-      }
+      _searchQuery = query;
     });
   }
 
@@ -155,7 +109,7 @@ class _SearchTabState extends State<SearchTab> {
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        _runSearch(_searchController.text);
+                        setState(() {}); // Trigger rebuild to apply filters
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
@@ -203,9 +157,11 @@ class _SearchTabState extends State<SearchTab> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("₹${_vehiclePriceRange.start.round()}",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.white)),
             Text("₹${_vehiclePriceRange.end.round()}",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.white)),
           ],
         ),
 
@@ -265,12 +221,12 @@ class _SearchTabState extends State<SearchTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Price Range
-        _buildFilterLabel("Daily Rate Range"),
+        _buildFilterLabel("Price Range (Per Day)"),
         RangeSlider(
           values: _driverPriceRange,
           min: 0,
           max: 5000,
-          divisions: 20,
+          divisions: 10,
           activeColor: AppColors.primaryColor,
           inactiveColor: AppColors.lightGrayColor,
           labels: RangeLabels(
@@ -285,9 +241,11 @@ class _SearchTabState extends State<SearchTab> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("₹${_driverPriceRange.start.round()}",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.white)),
             Text("₹${_driverPriceRange.end.round()}",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.white)),
           ],
         ),
 
@@ -329,7 +287,7 @@ class _SearchTabState extends State<SearchTab> {
                 label: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("$rating+"),
+                    const Text("\$rating+"),
                     const SizedBox(width: 4),
                     Icon(Icons.star,
                         size: 14,
@@ -387,10 +345,12 @@ class _SearchTabState extends State<SearchTab> {
                         child: TextField(
                           controller: _searchController,
                           onChanged: _runSearch,
+                          style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
                             hintText: _selectedType == SearchType.vehicle
                                 ? "Search cars..."
                                 : "Search drivers...",
+                            hintStyle: const TextStyle(color: Colors.grey),
                             filled: true,
                             fillColor: AppColors.cardColor,
                             prefixIcon: const Icon(Icons.search,
@@ -458,7 +418,6 @@ class _SearchTabState extends State<SearchTab> {
         onTap: () {
           setState(() {
             _selectedType = type;
-            _runSearch(_searchController.text); // Re-run search for new type
           });
         },
         child: Container(
@@ -489,140 +448,187 @@ class _SearchTabState extends State<SearchTab> {
   }
 
   Widget _buildCarList() {
-    if (_filteredCarIndexes.isEmpty) return _buildEmptyState();
+    return BlocBuilder<CarCubit, CarState>(
+      builder: (context, state) {
+        if (state is CarLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is CarError) {
+          return const Center(
+              child: Text("Error loading cars",
+                  style: TextStyle(color: Colors.red)));
+        } else if (state is CarLoaded) {
+          final cars = state.cars.where((car) {
+            final name = "${car.brand} ${car.name}".toLowerCase();
+            final matchesQuery = name.contains(_searchQuery.toLowerCase());
+            final matchesPrice = car.price >= _vehiclePriceRange.start &&
+                car.price <= _vehiclePriceRange.end;
+            final matchesFuel = _selectedFuelType == null ||
+                car.fuel.toLowerCase() == _selectedFuelType!.toLowerCase();
+            final matchesTrans = _selectedTransmission == null ||
+                car.transmission.toLowerCase() ==
+                    _selectedTransmission!.toLowerCase();
 
-    return ListView.builder(
-      itemCount: carsList.length,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12.0),
-          child: CarCard(
-            carData: carsList[index],
-          ),
-        );
+            return matchesQuery && matchesPrice && matchesFuel && matchesTrans;
+          }).toList();
+
+          if (cars.isEmpty) return _buildEmptyState();
+
+          return ListView.builder(
+            itemCount: cars.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: CarCard(
+                  carData: cars[index].toJson(),
+                ),
+              );
+            },
+          );
+        }
+        return const SizedBox.shrink();
       },
     );
   }
 
   Widget _buildDriverList() {
-    if (_filteredDriverIndexes.isEmpty) return _buildEmptyState();
+    return BlocBuilder<DriverCubit, DriverState>(
+      builder: (context, state) {
+        if (state is DriverLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is DriverError) {
+          return const Center(
+              child: Text("Error loading drivers",
+                  style: TextStyle(color: Colors.red)));
+        } else if (state is DriverLoaded) {
+          final filteredDrivers = state.drivers.where((driver) {
+            final name = driver.name.toLowerCase();
+            final price = driver.price;
+            final category = driver.category;
+            final rating = driver.rating;
 
-    return ListView.builder(
-      itemCount: _filteredDriverIndexes.length,
-      itemBuilder: (context, index) {
-        final i = _filteredDriverIndexes[index];
-        final driver = sampleDrivers[i];
+            final matchesQuery = name.contains(_searchQuery.toLowerCase());
+            final matchesPrice = price >= _driverPriceRange.start &&
+                price <= _driverPriceRange.end;
+            final matchesCategory = _selectedDriverCategory == null ||
+                category == _selectedDriverCategory;
+            final matchesRating = rating >= _minDriverRating;
 
-        return GestureDetector(
-          onTap: () {
-            // Navigate to Details Screen
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DriverDetailsScreen(driver: driver),
-              ),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.cardColor,
-              borderRadius: BorderRadius.circular(16),
-              border:
-                  Border.all(color: AppColors.primaryColor.withOpacity(0.9)),
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    driver['image'],
-                    width: 70,
-                    height: 70,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                        width: 70,
-                        height: 70,
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.person, color: Colors.grey)),
+            return matchesQuery &&
+                matchesPrice &&
+                matchesCategory &&
+                matchesRating;
+          }).toList();
+
+          if (filteredDrivers.isEmpty) return _buildEmptyState();
+
+          return ListView.builder(
+            itemCount: filteredDrivers.length,
+            itemBuilder: (context, index) {
+              final driver = filteredDrivers[index];
+
+              return GestureDetector(
+                onTap: () {
+                  // Navigate to Details Screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          DriverDetailsScreen(driver: driver.toJson()),
+                    ),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                        color: AppColors.primaryColor.withOpacity(0.9)),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        driver['name'],
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppColors.whiteColor),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          driver.image,
+                          width: 70,
+                          height: 70,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                  width: 70,
+                                  height: 70,
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.person,
+                                      color: Colors.grey)),
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "${driver['experience']} Experience • ${driver['category']}",
-                        style: const TextStyle(
-                            color: AppColors.whiteColor, fontSize: 12),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              driver.name,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: AppColors.whiteColor),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "${driver.experience} Experience • ${driver.category}",
+                              style: const TextStyle(
+                                  color: AppColors.whiteColor, fontSize: 12),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              driver.languages.join(', '),
+                              style: const TextStyle(
+                                  color: AppColors.whiteColor, fontSize: 12),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                const Icon(Icons.star,
+                                    size: 14, color: Colors.amber),
+                                const SizedBox(width: 4),
+                                Text(
+                                  driver.rating.toString(),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        (driver['languages'] as List<String>?)?.join(', ') ??
-                            'No info',
-                        style: const TextStyle(
-                            color: AppColors.whiteColor, fontSize: 12),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Icon(Icons.star, size: 14, color: Colors.amber),
-                          const SizedBox(width: 4),
                           Text(
-                            driver['rating'].toString(),
+                            "₹${driver.price}",
                             style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
+                                color: AppColors.primaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16),
+                          ),
+                          const Text(
+                            "/day",
+                            style: TextStyle(color: Colors.grey, fontSize: 10),
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "₹${driver['price']}",
-                      style: const TextStyle(
-                          color: AppColors.primaryColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16),
-                    ),
-                    const Text(
-                      "/day",
-                      style:
-                          TextStyle(color: AppColors.grayColor, fontSize: 10),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text("View",
-                          style: TextStyle(
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12)),
-                    )
-                  ],
-                )
-              ],
-            ),
-          ),
-        );
+              );
+            },
+          );
+        }
+        return const SizedBox.shrink();
       },
     );
   }
@@ -632,11 +638,19 @@ class _SearchTabState extends State<SearchTab> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.search_off, size: 60, color: AppColors.primaryColor),
+          Icon(Icons.search_off, size: 60, color: Colors.grey.shade700),
           const SizedBox(height: 16),
           Text(
-            "No ${_selectedType == SearchType.vehicle ? 'vehicles' : 'drivers'} found.",
-            style: const TextStyle(fontSize: 16, color: AppColors.grayColor),
+            "No results found",
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade400),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Try adjusting your filters or search query",
+            style: TextStyle(color: Colors.grey.shade600),
           ),
         ],
       ),
