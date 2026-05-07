@@ -119,7 +119,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
                 final allBookings = snapshot.data ?? [];
                 final upcomingBookings = allBookings
-                    .where((b) => b.status == 'Active' || b.status == 'Confirmed')
+                    .where((b) => ['Active', 'Confirmed', 'En route', 'Arrived', 'Started'].contains(b.status))
                     .toList();
 
                 return Column(
@@ -230,16 +230,57 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   Text("₹${booking.driverCost}", style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
-                child: const Text("Navigate", style: TextStyle(color: Colors.white)),
-              )
+              if (booking.status == 'Active') ...[
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => _updateStatus(booking.id, 'Rejected'),
+                      child: const Text("Reject", style: TextStyle(color: Colors.red)),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => _updateStatus(booking.id, 'Confirmed'),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                      child: const Text("Accept", style: TextStyle(color: Colors.white)),
+                    )
+                  ]
+                )
+              ] else if (booking.status == 'Confirmed') ...[
+                ElevatedButton(
+                  onPressed: () => _updateStatus(booking.id, 'En route'),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
+                  child: const Text("Start: En route", style: TextStyle(color: Colors.white)),
+                )
+              ] else if (booking.status == 'En route') ...[
+                ElevatedButton(
+                  onPressed: () => _updateStatus(booking.id, 'Arrived'),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
+                  child: const Text("Arrived", style: TextStyle(color: Colors.white)),
+                )
+              ] else if (booking.status == 'Arrived') ...[
+                ElevatedButton(
+                  onPressed: () => _updateStatus(booking.id, 'Started'),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
+                  child: const Text("Start Trip", style: TextStyle(color: Colors.white)),
+                )
+              ] else if (booking.status == 'Started') ...[
+                ElevatedButton(
+                  onPressed: () => _updateStatus(booking.id, 'Completed'),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child: const Text("Complete Ride", style: TextStyle(color: Colors.white)),
+                )
+              ]
             ],
           )
         ],
       ),
     );
+  }
+
+  Future<void> _updateStatus(String bookingId, String newStatus) async {
+    await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({'status': newStatus});
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Status updated to $newStatus"), backgroundColor: Colors.green));
+    }
   }
 
   Widget _buildWalletTab() {

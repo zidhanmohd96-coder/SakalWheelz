@@ -27,7 +27,11 @@ class _SearchTabState extends State<SearchTab> {
   // --- VEHICLE FILTER STATES ---
   RangeValues _vehiclePriceRange = const RangeValues(0, 10000);
   String? _selectedTransmission; // 'Automatic', 'Manual'
-  String? _selectedFuelType; // 'Petrol', 'Diesel', 'EV'
+  String? _selectedFuelType; // 'Petrol', 'Diesel', 'Electric'
+  String? _searchLocation;
+  String? _selectedCarType;
+  String? _selectedBrand;
+  String _selectedSort = 'Recommended';
 
   // --- DRIVER FILTER STATES ---
   RangeValues _driverPriceRange = const RangeValues(0, 5000);
@@ -80,6 +84,10 @@ class _SearchTabState extends State<SearchTab> {
                               _vehiclePriceRange = const RangeValues(0, 10000);
                               _selectedTransmission = null;
                               _selectedFuelType = null;
+                              _searchLocation = null;
+                              _selectedCarType = null;
+                              _selectedBrand = null;
+                              _selectedSort = 'Recommended';
                             } else {
                               _driverPriceRange = const RangeValues(0, 5000);
                               _selectedDriverCategory = null;
@@ -136,6 +144,41 @@ class _SearchTabState extends State<SearchTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Sort By
+        _buildFilterLabel("Sort By"),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _selectedSort,
+          dropdownColor: AppColors.cardColor,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+            filled: true,
+            fillColor: AppColors.cardColor,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          ),
+          items: ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Rating: High to Low'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+          onChanged: (v) => setModalState(() => _selectedSort = v!),
+        ),
+        const SizedBox(height: 24),
+
+        // Location
+        _buildFilterLabel("Location"),
+        const SizedBox(height: 8),
+        TextField(
+          controller: TextEditingController(text: _searchLocation),
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: "Enter location",
+            hintStyle: const TextStyle(color: Colors.grey),
+            filled: true,
+            fillColor: AppColors.cardColor,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          ),
+          onChanged: (v) => setModalState(() => _searchLocation = v),
+        ),
+        const SizedBox(height: 24),
+
         // Price Range
         _buildFilterLabel("Price Range (Per Day)"),
         RangeSlider(
@@ -167,6 +210,46 @@ class _SearchTabState extends State<SearchTab> {
 
         const SizedBox(height: 24),
 
+        // Brand
+        _buildFilterLabel("Brand"),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          children: ['Toyota', 'BMW', 'Audi', 'Mercedes', 'Hyundai', 'Mahindra'].map((type) {
+            final isSelected = _selectedBrand == type;
+            return ChoiceChip(
+              label: Text(type),
+              selected: isSelected,
+              selectedColor: AppColors.primaryColor,
+              labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.whiteColor),
+              backgroundColor: AppColors.cardColor,
+              side: BorderSide.none,
+              onSelected: (bool selected) => setModalState(() => _selectedBrand = selected ? type : null),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 24),
+
+        // Car Type
+        _buildFilterLabel("Car Type"),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          children: ['Sedan', 'SUV', 'Luxury', 'Sport', 'Hatchback'].map((type) {
+            final isSelected = _selectedCarType == type;
+            return ChoiceChip(
+              label: Text(type),
+              selected: isSelected,
+              selectedColor: AppColors.primaryColor,
+              labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.whiteColor),
+              backgroundColor: AppColors.cardColor,
+              side: BorderSide.none,
+              onSelected: (bool selected) => setModalState(() => _selectedCarType = selected ? type : null),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 24),
+
         // Transmission
         _buildFilterLabel("Transmission"),
         const SizedBox(height: 8),
@@ -181,6 +264,7 @@ class _SearchTabState extends State<SearchTab> {
               labelStyle:
                   TextStyle(color: isSelected ? Colors.white : Colors.white),
               backgroundColor: AppColors.cardColor,
+              side: BorderSide.none,
               onSelected: (bool selected) {
                 setModalState(
                     () => _selectedTransmission = selected ? type : null);
@@ -205,6 +289,7 @@ class _SearchTabState extends State<SearchTab> {
               labelStyle: TextStyle(
                   color: isSelected ? Colors.white : AppColors.whiteColor),
               backgroundColor: AppColors.cardColor,
+              side: BorderSide.none,
               onSelected: (bool selected) {
                 setModalState(() => _selectedFuelType = selected ? type : null);
               },
@@ -467,9 +552,20 @@ class _SearchTabState extends State<SearchTab> {
             final matchesTrans = _selectedTransmission == null ||
                 car.transmission.toLowerCase() ==
                     _selectedTransmission!.toLowerCase();
+            final matchesType = _selectedCarType == null || car.type.toLowerCase() == _selectedCarType!.toLowerCase();
+            final matchesBrand = _selectedBrand == null || car.brand.toLowerCase() == _selectedBrand!.toLowerCase();
+            final matchesLocation = _searchLocation == null || _searchLocation!.isEmpty || car.location.toLowerCase().contains(_searchLocation!.toLowerCase());
 
-            return matchesQuery && matchesPrice && matchesFuel && matchesTrans;
+            return matchesQuery && matchesPrice && matchesFuel && matchesTrans && matchesType && matchesBrand && matchesLocation;
           }).toList();
+
+          if (_selectedSort == 'Price: Low to High') {
+            cars.sort((a, b) => a.price.compareTo(b.price));
+          } else if (_selectedSort == 'Price: High to Low') {
+            cars.sort((a, b) => b.price.compareTo(a.price));
+          } else if (_selectedSort == 'Rating: High to Low') {
+            cars.sort((a, b) => b.rating.compareTo(a.rating));
+          }
 
           if (cars.isEmpty) return _buildEmptyState();
 

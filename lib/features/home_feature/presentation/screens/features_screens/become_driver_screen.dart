@@ -15,6 +15,28 @@ class BecomeDriverScreen extends StatefulWidget {
 class _BecomeDriverScreenState extends State<BecomeDriverScreen> {
   int _currentStep = 0;
 
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _licenseController = TextEditingController();
+  final _expiryController = TextEditingController();
+  final _hourlyRateController = TextEditingController();
+  final _dailyRateController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _cityController.dispose();
+    _experienceController.dispose();
+    _licenseController.dispose();
+    _expiryController.dispose();
+    _hourlyRateController.dispose();
+    _dailyRateController.dispose();
+    super.dispose();
+  }
+
   // -- State Variables for Step 3 --
   final List<String> _selectedServices = [];
   final List<String> _selectedLanguages = ["English"]; // Default selection
@@ -224,13 +246,13 @@ class _BecomeDriverScreenState extends State<BecomeDriverScreen> {
           style: TextStyle(
               fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
       const SizedBox(height: 20),
-      _buildTextField("Full Name", "Sakal Driver"),
+      _buildTextField("Full Name", "Sakal Driver", controller: _nameController),
       const SizedBox(height: 16),
-      _buildTextField("Phone Number", "+91 9876543210"),
+      _buildTextField("Phone Number", "+91 9876543210", controller: _phoneController),
       const SizedBox(height: 16),
-      _buildTextField("City", "Kochi"),
+      _buildTextField("City", "Kochi", controller: _cityController),
       const SizedBox(height: 16),
-      _buildTextField("Years of Experience", "Eg: 3"),
+      _buildTextField("Years of Experience", "Eg: 3", controller: _experienceController),
     ]);
   }
 
@@ -280,9 +302,9 @@ class _BecomeDriverScreenState extends State<BecomeDriverScreen> {
           style: TextStyle(
               fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
       const SizedBox(height: 20),
-      _buildTextField("Driving License Number", "MH0120190001234"),
+      _buildTextField("Driving License Number", "MH0120190001234", controller: _licenseController),
       const SizedBox(height: 16),
-      _buildTextField("License Expiry Date", "mm/dd/yyyy", isDate: true),
+      _buildTextField("License Expiry Date", "mm/dd/yyyy", isDate: true, controller: _expiryController),
       const SizedBox(height: 24),
 
       // Upload Box 1
@@ -429,22 +451,23 @@ class _BecomeDriverScreenState extends State<BecomeDriverScreen> {
       const SizedBox(height: 24),
       Row(
         children: [
-          Expanded(child: _buildTextField("Hourly Rate (₹)", "150")),
+          Expanded(child: _buildTextField("Hourly Rate (₹)", "150", controller: _hourlyRateController)),
           const SizedBox(width: 16),
-          Expanded(child: _buildTextField("Daily Rate (₹)", "1000")),
+          Expanded(child: _buildTextField("Daily Rate (₹)", "1000", controller: _dailyRateController)),
         ],
       ),
     ]);
   }
 
   // -- Reusable Text Field --
-  Widget _buildTextField(String label, String hint, {bool isDate = false}) {
+  Widget _buildTextField(String label, String hint, {bool isDate = false, TextEditingController? controller}) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label,
           style: const TextStyle(
               color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
       const SizedBox(height: 8),
       TextField(
+          controller: controller,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
               hintText: hint,

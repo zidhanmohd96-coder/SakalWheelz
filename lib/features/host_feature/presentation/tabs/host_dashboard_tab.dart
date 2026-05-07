@@ -99,7 +99,7 @@ class _HostDashboardTabState extends State<HostDashboardTab> {
                       Row(
                         children: [
                           _buildStatCard("Total", "${bookings.length}",
-                              Icons.receipt_long, Colors.blueAccent),
+                              Icons.receipt_long, AppColors.primaryColor),
                           const SizedBox(width: 16),
                           _buildStatCard(
                               "Pending",

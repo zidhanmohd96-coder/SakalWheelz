@@ -203,6 +203,7 @@ class _ChatTabState extends State<ChatTab> {
                   child: CircleAvatar(
                     radius: 28,
                     backgroundImage: NetworkImage(chat.image),
+                    onBackgroundImageError: (e, s) {},
                   ),
                 ),
                 if (chat.isOnline)

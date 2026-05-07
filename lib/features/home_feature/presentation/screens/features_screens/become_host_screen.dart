@@ -16,6 +16,28 @@ class BecomeHostScreen extends StatefulWidget {
 class _BecomeHostScreenState extends State<BecomeHostScreen> {
   int _currentStep = 0;
 
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _aadhaarController = TextEditingController();
+  final _panController = TextEditingController();
+  final _bankAccountController = TextEditingController();
+  final _ifscController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _cityController.dispose();
+    _addressController.dispose();
+    _aadhaarController.dispose();
+    _panController.dispose();
+    _bankAccountController.dispose();
+    _ifscController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -165,13 +187,13 @@ class _BecomeHostScreenState extends State<BecomeHostScreen> {
                 color: Colors.white,
                 fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        _buildTextField("Full Name", "Ex: John Doe"),
+        _buildTextField("Full Name", "Ex: John Doe", controller: _nameController),
         const SizedBox(height: 16),
-        _buildTextField("Phone Number", "+91 9876543210", isPhone: true),
+        _buildTextField("Phone Number", "+91 9876543210", isPhone: true, controller: _phoneController),
         const SizedBox(height: 16),
-        _buildTextField("City", "Mumbai"),
+        _buildTextField("City", "Mumbai", controller: _cityController),
         const SizedBox(height: 16),
-        _buildTextField("Full Address", "Enter your address"),
+        _buildTextField("Full Address", "Enter your address", controller: _addressController),
       ],
     );
   }
@@ -193,9 +215,9 @@ class _BecomeHostScreenState extends State<BecomeHostScreen> {
                 color: Colors.white,
                 fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        _buildTextField("Aadhaar Number", "1234 5678 9012"),
+        _buildTextField("Aadhaar Number", "1234 5678 9012", controller: _aadhaarController),
         const SizedBox(height: 16),
-        _buildTextField("PAN Number (Optional)", "ABCDE1234F"),
+        _buildTextField("PAN Number (Optional)", "ABCDE1234F", controller: _panController),
         const SizedBox(height: 24),
         Container(
           height: 120,
@@ -238,14 +260,14 @@ class _BecomeHostScreenState extends State<BecomeHostScreen> {
                 color: Colors.white,
                 fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        _buildTextField("Bank Account Number", "Enter account number"),
+        _buildTextField("Bank Account Number", "Enter account number", controller: _bankAccountController),
         const SizedBox(height: 16),
-        _buildTextField("IFSC Code", "SBIN0001234"),
+        _buildTextField("IFSC Code", "SBIN0001234", controller: _ifscController),
       ],
     );
   }
 
-  Widget _buildTextField(String label, String hint, {bool isPhone = false}) {
+  Widget _buildTextField(String label, String hint, {bool isPhone = false, TextEditingController? controller}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -256,6 +278,7 @@ class _BecomeHostScreenState extends State<BecomeHostScreen> {
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         TextField(
+          controller: controller,
           style: const TextStyle(color: Colors.white),
           keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
           decoration: InputDecoration(
