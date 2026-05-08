@@ -33,10 +33,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   Future<void> _loadDriverName() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists && mounted) {
         setState(() {
           _driverName = doc.data()?['full_name'] ?? '';
@@ -95,7 +93,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         actions: [
           Row(
             children: [
-              Text(_isOnline ? "Online" : "Offline", style: const TextStyle(color: Colors.white)),
+              Text(_isOnline ? "Online" : "Offline",
+                  style: const TextStyle(color: Colors.white)),
               Switch(
                   value: _isOnline,
                   onChanged: (val) {
@@ -103,7 +102,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       _isOnline = val;
                     });
                   },
-                  activeColor: AppColors.primaryColor)
+                  activeThumbColor: AppColors.primaryColor)
             ],
           )
         ],
@@ -119,7 +118,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
                 final allBookings = snapshot.data ?? [];
                 final upcomingBookings = allBookings
-                    .where((b) => ['Active', 'Confirmed', 'En route', 'Arrived', 'Started'].contains(b.status))
+                    .where((b) => [
+                          'Active',
+                          'Confirmed',
+                          'En route',
+                          'Arrived',
+                          'Started'
+                        ].contains(b.status))
                     .toList();
 
                 return Column(
@@ -134,20 +139,32 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                               Container(
                                 padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(
-                                  color: _isOnline ? AppColors.primaryColor.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+                                  color: _isOnline
+                                      ? AppColors.primaryColor
+                                          .withValues(alpha: 0.1)
+                                      : Colors.grey.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(Icons.wifi_tethering,
-                                    size: 80, color: _isOnline ? AppColors.primaryColor : Colors.grey),
+                                    size: 80,
+                                    color: _isOnline
+                                        ? AppColors.primaryColor
+                                        : Colors.grey),
                               ),
                               const SizedBox(height: 20),
-                              Text(_isOnline ? "You are Online" : "You are Offline",
+                              Text(
+                                  _isOnline
+                                      ? "You are Online"
+                                      : "You are Offline",
                                   style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold)),
                               const SizedBox(height: 10),
-                              Text(_isOnline ? "Waiting for trip requests..." : "Go online to receive requests",
+                              Text(
+                                  _isOnline
+                                      ? "Waiting for trip requests..."
+                                      : "Go online to receive requests",
                                   style: const TextStyle(color: Colors.grey)),
                             ],
                           ),
@@ -179,7 +196,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       decoration: BoxDecoration(
         color: AppColors.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryColor.withValues(alpha: 0.5)),
+        border:
+            Border.all(color: AppColors.primaryColor.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +206,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text("Ride • ${dateFormat.format(booking.startDate)}",
-                  style: const TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.bold)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -205,7 +225,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             children: [
               const Icon(Icons.my_location, color: Colors.green, size: 20),
               const SizedBox(width: 8),
-              Expanded(child: Text(booking.pickupLocation, style: const TextStyle(color: Colors.white))),
+              Expanded(
+                  child: Text(booking.pickupLocation,
+                      style: const TextStyle(color: Colors.white))),
             ],
           ),
           Padding(
@@ -216,7 +238,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             children: [
               const Icon(Icons.location_on, color: Colors.red, size: 20),
               const SizedBox(width: 8),
-              Expanded(child: Text(booking.dropoffLocation, style: const TextStyle(color: Colors.white))),
+              Expanded(
+                  child: Text(booking.dropoffLocation,
+                      style: const TextStyle(color: Colors.white))),
             ],
           ),
           const SizedBox(height: 16),
@@ -226,47 +250,61 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Estimated Earnings", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                  Text("₹${booking.driverCost}", style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text("Estimated Earnings",
+                      style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text("₹${booking.driverCost}",
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
               if (booking.status == 'Active') ...[
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () => _updateStatus(booking.id, 'Rejected'),
-                      child: const Text("Reject", style: TextStyle(color: Colors.red)),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => _updateStatus(booking.id, 'Confirmed'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                      child: const Text("Accept", style: TextStyle(color: Colors.white)),
-                    )
-                  ]
-                )
+                Row(children: [
+                  TextButton(
+                    onPressed: () => _updateStatus(booking.id, 'Rejected'),
+                    child: const Text("Reject",
+                        style: TextStyle(color: Colors.red)),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _updateStatus(booking.id, 'Confirmed'),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    child: const Text("Accept",
+                        style: TextStyle(color: Colors.white)),
+                  )
+                ])
               ] else if (booking.status == 'Confirmed') ...[
                 ElevatedButton(
                   onPressed: () => _updateStatus(booking.id, 'En route'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
-                  child: const Text("Start: En route", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor),
+                  child: const Text("Start: En route",
+                      style: TextStyle(color: Colors.white)),
                 )
               ] else if (booking.status == 'En route') ...[
                 ElevatedButton(
                   onPressed: () => _updateStatus(booking.id, 'Arrived'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
-                  child: const Text("Arrived", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor),
+                  child: const Text("Arrived",
+                      style: TextStyle(color: Colors.white)),
                 )
               ] else if (booking.status == 'Arrived') ...[
                 ElevatedButton(
                   onPressed: () => _updateStatus(booking.id, 'Started'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
-                  child: const Text("Start Trip", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor),
+                  child: const Text("Start Trip",
+                      style: TextStyle(color: Colors.white)),
                 )
               ] else if (booking.status == 'Started') ...[
                 ElevatedButton(
                   onPressed: () => _updateStatus(booking.id, 'Completed'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  child: const Text("Complete Ride", style: TextStyle(color: Colors.white)),
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child: const Text("Complete Ride",
+                      style: TextStyle(color: Colors.white)),
                 )
               ]
             ],
@@ -277,16 +315,22 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   }
 
   Future<void> _updateStatus(String bookingId, String newStatus) async {
-    await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({'status': newStatus});
+    await FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(bookingId)
+        .update({'status': newStatus});
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Status updated to $newStatus"), backgroundColor: Colors.green));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Status updated to $newStatus"),
+          backgroundColor: Colors.green));
     }
   }
 
   Widget _buildWalletTab() {
     return AppScaffold(
       appBar: AppBar(
-        title: const Text("Wallet & Earnings", style: TextStyle(color: Colors.white)),
+        title: const Text("Wallet & Earnings",
+            style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
       ),
@@ -296,8 +340,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               stream: _bookingRepo.getDriverBookings(_driverName),
               builder: (context, snapshot) {
                 final bookings = snapshot.data ?? [];
-                final completedTrips = bookings.where((b) => b.status == 'Completed').toList();
-                final totalEarnings = completedTrips.fold(0.0, (sum, b) => sum + b.driverCost);
+                final completedTrips =
+                    bookings.where((b) => b.status == 'Completed').toList();
+                final totalEarnings =
+                    completedTrips.fold(0.0, (sum, b) => sum + b.driverCost);
 
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -317,10 +363,15 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Total Earnings", style: TextStyle(color: Colors.white70, fontSize: 16)),
+                            const Text("Total Earnings",
+                                style: TextStyle(
+                                    color: Colors.white70, fontSize: 16)),
                             const SizedBox(height: 8),
                             Text("₹${totalEarnings.toStringAsFixed(2)}",
-                                style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.bold)),
                             const SizedBox(height: 16),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -328,8 +379,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text("Completed Trips", style: TextStyle(color: Colors.white70)),
-                                    Text("${completedTrips.length}", style: const TextStyle(color: Colors.white, fontSize: 18)),
+                                    const Text("Completed Trips",
+                                        style:
+                                            TextStyle(color: Colors.white70)),
+                                    Text("${completedTrips.length}",
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 18)),
                                   ],
                                 ),
                                 ElevatedButton(
@@ -349,7 +404,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       const AppTitleText("Recent Transactions", fontSize: 18),
                       const SizedBox(height: 16),
                       if (completedTrips.isEmpty)
-                        const Center(child: Text("No transactions yet.", style: TextStyle(color: Colors.grey)))
+                        const Center(
+                            child: Text("No transactions yet.",
+                                style: TextStyle(color: Colors.grey)))
                       else
                         Expanded(
                           child: ListView.builder(
@@ -359,14 +416,22 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                               return ListTile(
                                 leading: const CircleAvatar(
                                   backgroundColor: Colors.green,
-                                  child: Icon(Icons.attach_money, color: Colors.white),
+                                  child: Icon(Icons.attach_money,
+                                      color: Colors.white),
                                 ),
-                                title: Text("Trip to ${trip.dropoffLocation.split(',').first}",
-                                    style: const TextStyle(color: Colors.white)),
-                                subtitle: Text(DateFormat('MMM dd, yyyy').format(trip.endDate),
+                                title: Text(
+                                    "Trip to ${trip.dropoffLocation.split(',').first}",
+                                    style:
+                                        const TextStyle(color: Colors.white)),
+                                subtitle: Text(
+                                    DateFormat('MMM dd, yyyy')
+                                        .format(trip.endDate),
                                     style: const TextStyle(color: Colors.grey)),
                                 trailing: Text("+₹${trip.driverCost}",
-                                    style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16)),
+                                    style: const TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16)),
                               );
                             },
                           ),

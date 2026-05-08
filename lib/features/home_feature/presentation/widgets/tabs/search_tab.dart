@@ -148,16 +148,23 @@ class _SearchTabState extends State<SearchTab> {
         _buildFilterLabel("Sort By"),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _selectedSort,
+          initialValue: _selectedSort,
           dropdownColor: AppColors.cardColor,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(horizontal: 12),
             filled: true,
             fillColor: AppColors.cardColor,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none),
           ),
-          items: ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Rating: High to Low'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+          items: [
+            'Recommended',
+            'Price: Low to High',
+            'Price: High to Low',
+            'Rating: High to Low'
+          ].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
           onChanged: (v) => setModalState(() => _selectedSort = v!),
         ),
         const SizedBox(height: 24),
@@ -173,7 +180,9 @@ class _SearchTabState extends State<SearchTab> {
             hintStyle: const TextStyle(color: Colors.grey),
             filled: true,
             fillColor: AppColors.cardColor,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none),
           ),
           onChanged: (v) => setModalState(() => _searchLocation = v),
         ),
@@ -215,16 +224,19 @@ class _SearchTabState extends State<SearchTab> {
         const SizedBox(height: 8),
         Wrap(
           spacing: 10,
-          children: ['Toyota', 'BMW', 'Audi', 'Mercedes', 'Hyundai', 'Mahindra'].map((type) {
+          children: ['Toyota', 'BMW', 'Audi', 'Mercedes', 'Hyundai', 'Mahindra']
+              .map((type) {
             final isSelected = _selectedBrand == type;
             return ChoiceChip(
               label: Text(type),
               selected: isSelected,
               selectedColor: AppColors.primaryColor,
-              labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.whiteColor),
+              labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.whiteColor),
               backgroundColor: AppColors.cardColor,
               side: BorderSide.none,
-              onSelected: (bool selected) => setModalState(() => _selectedBrand = selected ? type : null),
+              onSelected: (bool selected) =>
+                  setModalState(() => _selectedBrand = selected ? type : null),
             );
           }).toList(),
         ),
@@ -235,16 +247,19 @@ class _SearchTabState extends State<SearchTab> {
         const SizedBox(height: 8),
         Wrap(
           spacing: 10,
-          children: ['Sedan', 'SUV', 'Luxury', 'Sport', 'Hatchback'].map((type) {
+          children:
+              ['Sedan', 'SUV', 'Luxury', 'Sport', 'Hatchback'].map((type) {
             final isSelected = _selectedCarType == type;
             return ChoiceChip(
               label: Text(type),
               selected: isSelected,
               selectedColor: AppColors.primaryColor,
-              labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.whiteColor),
+              labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.whiteColor),
               backgroundColor: AppColors.cardColor,
               side: BorderSide.none,
-              onSelected: (bool selected) => setModalState(() => _selectedCarType = selected ? type : null),
+              onSelected: (bool selected) => setModalState(
+                  () => _selectedCarType = selected ? type : null),
             );
           }).toList(),
         ),
@@ -552,11 +567,23 @@ class _SearchTabState extends State<SearchTab> {
             final matchesTrans = _selectedTransmission == null ||
                 car.transmission.toLowerCase() ==
                     _selectedTransmission!.toLowerCase();
-            final matchesType = _selectedCarType == null || car.type.toLowerCase() == _selectedCarType!.toLowerCase();
-            final matchesBrand = _selectedBrand == null || car.brand.toLowerCase() == _selectedBrand!.toLowerCase();
-            final matchesLocation = _searchLocation == null || _searchLocation!.isEmpty || car.location.toLowerCase().contains(_searchLocation!.toLowerCase());
+            final matchesType = _selectedCarType == null ||
+                car.type.toLowerCase() == _selectedCarType!.toLowerCase();
+            final matchesBrand = _selectedBrand == null ||
+                car.brand.toLowerCase() == _selectedBrand!.toLowerCase();
+            final matchesLocation = _searchLocation == null ||
+                _searchLocation!.isEmpty ||
+                car.location
+                    .toLowerCase()
+                    .contains(_searchLocation!.toLowerCase());
 
-            return matchesQuery && matchesPrice && matchesFuel && matchesTrans && matchesType && matchesBrand && matchesLocation;
+            return matchesQuery &&
+                matchesPrice &&
+                matchesFuel &&
+                matchesTrans &&
+                matchesType &&
+                matchesBrand &&
+                matchesLocation;
           }).toList();
 
           if (_selectedSort == 'Price: Low to High') {

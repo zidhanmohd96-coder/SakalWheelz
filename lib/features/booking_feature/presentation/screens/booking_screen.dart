@@ -4,8 +4,9 @@ import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_scaffold.dart';
 import 'package:car_rental_app/core/widgets/app_space.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
-import 'package:car_rental_app/features/booking_feature/presentation/screens/booking_success_screen.dart';
-import 'package:car_rental_app/features/booking_feature/data/models/booking_model.dart' as models;
+import 'package:car_rental_app/features/booking_feature/presentation/screens/payment_screen.dart';
+import 'package:car_rental_app/features/booking_feature/data/models/booking_model.dart'
+    as models;
 import 'package:car_rental_app/features/booking_feature/presentation/bloc/booking_cubit.dart';
 import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,7 +28,8 @@ class _BookingScreenState extends State<BookingScreen> {
   // --- STATE VARIABLES ---
 
   // Calendar State
-  DateTime _focusedMonth = DateTime.now();
+  DateTime _focusedMonth = DateTime.utc(
+      DateTime.now().year, DateTime.now().month, DateTime.now().day);
   DateTime? _startDate;
   DateTime? _endDate;
   final List<int> _bookedDays = [5, 6, 12, 18, 19, 20]; // Mock booked days
@@ -72,15 +74,12 @@ class _BookingScreenState extends State<BookingScreen> {
       rentalDays = _endDate!.difference(_startDate!).inDays + 1;
     }
 
-    double basePrice = (widget.carData['price'] is int)
-        ? (widget.carData['price'] as int).toDouble()
-        : (widget.carData['price'] as double);
+    double basePrice =
+        double.tryParse(widget.carData['price'].toString()) ?? 0.0;
 
     // Driver Cost (Use selected driver price or default $50 if none selected yet)
     double driverDailyPrice = _selectedDriver != null
-        ? (_selectedDriver!['price'] is int
-            ? (_selectedDriver!['price'] as int).toDouble()
-            : _selectedDriver!['price'])
+        ? (double.tryParse(_selectedDriver!['price'].toString()) ?? 50.0)
         : 50.0;
 
     double driverTotalCost =
@@ -213,10 +212,13 @@ class _BookingScreenState extends State<BookingScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               image: DecorationImage(
-                image: AssetImage((widget.carData['images'] != null &&
+                image: (widget.carData['images'] != null &&
                         (widget.carData['images'] as List).isNotEmpty)
-                    ? widget.carData['images'][0]
-                    : 'assets/images/banner1.png'),
+                    ? (widget.carData['images'][0].toString().startsWith('http')
+                            ? NetworkImage(widget.carData['images'][0])
+                            : AssetImage(widget.carData['images'][0]))
+                        as ImageProvider
+                    : const AssetImage('assets/images/banner1.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -255,8 +257,8 @@ class _BookingScreenState extends State<BookingScreen> {
         borderRadius: BorderRadius.circular(20),
       ),
       child: TableCalendar(
-        firstDay: DateTime.now(),
-        lastDay: DateTime.now().add(const Duration(days: 365)),
+        firstDay: DateTime.utc(DateTime.now().year, DateTime.now().month, 1),
+        lastDay: DateTime.utc(DateTime.now().year + 2, 12, 31),
         focusedDay: _focusedMonth,
         rangeStartDay: _startDate,
         rangeEndDay: _endDate,
@@ -657,6 +659,7 @@ class _BookingScreenState extends State<BookingScreen> {
       child: Row(
         children: [
           Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -675,7 +678,7 @@ class _BookingScreenState extends State<BookingScreen> {
           const SizedBox(width: 40),
           Expanded(
             child: SizedBox(
-              height: 56, // reduced from 94 to fit properly
+              height: 85, // reduced from 94 to fit properly
               child: AppButton(
                 title: "Confirm Booking",
                 onPressed: () {
@@ -683,6 +686,12 @@ class _BookingScreenState extends State<BookingScreen> {
                   if (_startDate == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Please select dates!")));
+                    return;
+                  }
+
+                  if (_isWithDriver && _selectedDriver == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Please select a driver!")));
                     return;
                   }
 
@@ -734,8 +743,8 @@ class _BookingScreenState extends State<BookingScreen> {
                     backgroundColor: AppColors.primaryColor),
                 onPressed: () async {
                   Navigator.pop(context); // Close dialog
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("License Verified! Creating booking...")));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text("License Verified! Creating booking...")));
 
                   // Get current user
                   final user = FirebaseAuth.instance.currentUser;
@@ -743,13 +752,16 @@ class _BookingScreenState extends State<BookingScreen> {
 
                   // Extract car image safely
                   final images = widget.carData['images'] as List? ?? [];
-                  final carImage = images.isNotEmpty ? images[0].toString() : '';
+                  final carImage =
+                      images.isNotEmpty ? images[0].toString() : '';
 
                   // Extract host info
-                  final host = widget.carData['host'] as Map<String, dynamic>? ?? {};
+                  final host =
+                      widget.carData['host'] as Map<String, dynamic>? ?? {};
 
                   // Calculate days
-                  final endDate = _endDate ?? _startDate!.add(const Duration(days: 1));
+                  final endDate =
+                      _endDate ?? _startDate!.add(const Duration(days: 1));
                   final rentalDays = endDate.difference(_startDate!).inDays + 1;
 
                   // Build the booking model
@@ -761,7 +773,8 @@ class _BookingScreenState extends State<BookingScreen> {
                     carName: widget.carData['name']?.toString() ?? '',
                     carImage: carImage,
                     carType: widget.carData['type']?.toString() ?? '',
-                    carTransmission: widget.carData['transmission']?.toString() ?? '',
+                    carTransmission:
+                        widget.carData['transmission']?.toString() ?? '',
                     hostName: host['name']?.toString() ?? '',
                     hostPhone: host['phone']?.toString() ?? '',
                     startDate: _startDate!,
@@ -772,38 +785,34 @@ class _BookingScreenState extends State<BookingScreen> {
                     dropoffLocation: _dropoffLocation,
                     hasDriver: _isWithDriver,
                     driverName: _selectedDriver?['name']?.toString(),
-                    driverCost: _isWithDriver
-                        ? ((_selectedDriver?['price'] ?? 0) is int
-                            ? (_selectedDriver!['price'] as int).toDouble()
-                            : (_selectedDriver?['price'] ?? 0.0)) * rentalDays
+                    driverCost: _isWithDriver && _selectedDriver != null
+                        ? (double.tryParse(
+                                    _selectedDriver!['price'].toString()) ??
+                                0.0) *
+                            rentalDays
                         : 0.0,
                     hasPremiumInsurance: _isPremiumInsurance,
-                    insuranceCost: _isPremiumInsurance ? 15.0 * rentalDays : 0.0,
+                    insuranceCost:
+                        _isPremiumInsurance ? 15.0 * rentalDays : 0.0,
                     promoCode: _isPromoApplied ? _promoController.text : null,
                     promoDiscount: _isPromoApplied ? 0.10 : 0.0,
-                    basePricePerDay: (widget.carData['price'] is int)
-                        ? (widget.carData['price'] as int).toDouble()
-                        : (widget.carData['price'] as double),
+                    basePricePerDay:
+                        double.tryParse(widget.carData['price'].toString()) ??
+                            0.0,
                     rentalDays: rentalDays,
                     totalPrice: price,
                     status: 'Active',
                     createdAt: DateTime.now(),
                   );
 
-                  // Save to Firestore via BookingCubit
-                  final cubit = this.context.read<BookingCubit>();
-                  final firestoreId = await cubit.createBooking(booking);
-
-                  if (mounted && firestoreId != null) {
+                  // Navigate to Payment Screen instead of directly saving to Firestore
+                  if (mounted) {
                     Navigator.push(
                       this.context,
                       MaterialPageRoute(
-                        builder: (context) => BookingSuccessScreen(
+                        builder: (context) => PaymentScreen(
+                          booking: booking,
                           carData: widget.carData,
-                          bookingId: firestoreId.substring(0, 8).toUpperCase(),
-                          startDate: _startDate!,
-                          endDate: endDate,
-                          totalPrice: price,
                         ),
                       ),
                     );

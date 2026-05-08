@@ -12,6 +12,7 @@ import 'package:car_rental_app/features/booking_feature/data/repositories/bookin
 import 'package:car_rental_app/features/booking_feature/presentation/bloc/booking_cubit.dart';
 import 'package:car_rental_app/features/driver_feature/data/repositories/driver_repository.dart';
 import 'package:car_rental_app/features/driver_feature/presentation/bloc/driver_cubit.dart';
+import 'package:car_rental_app/core/services/notification_service.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -21,6 +22,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialize Local Notifications
+  await NotificationService.initialize();
 
   final carRepo = CarRepository();
   await carRepo.seedMockDataIfEmpty();
