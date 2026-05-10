@@ -2,6 +2,9 @@ import 'package:car_rental_app/core/theme/colors.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
 import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
 import 'package:car_rental_app/features/home_feature/presentation/screens/features_screens/chat_detail_screen.dart';
+import 'package:car_rental_app/features/booking_feature/presentation/bloc/booking_cubit.dart';
+import 'package:car_rental_app/features/booking_feature/data/models/booking_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
 class ChatTab extends StatefulWidget {
@@ -18,52 +21,40 @@ class _ChatTabState extends State<ChatTab> {
   @override
   void initState() {
     super.initState();
-    _syncChatsWithBookings();
+    context.read<BookingCubit>().loadUserBookings();
   }
 
   // --- LOGIC: Sync Bookings to Chats ---
-  void _syncChatsWithBookings() {
-    // 1. Loop through all active/completed bookings
+  void _syncChatsWithBookings(List<BookingModel> bookings) {
     final activeBookings =
-        myBookings.where((b) => b.status != 'Cancelled').toList();
+        bookings.where((b) => b.status != 'Cancelled' && b.status != 'Rejected').toList();
 
     for (var booking in activeBookings) {
-      if (booking.car['host'] != null) {
-        final host = booking.car['host'];
+      final hostName = booking.hostName.isNotEmpty ? booking.hostName : "Host of ${booking.carName}";
 
-        // 2. Check if a chat already exists for this Host
-        // We use Name as ID for simplicity in this demo
-        final bool chatExists = myChats.any((c) => c.name == host['name']);
+      final bool chatExists = myChats.any((c) => c.name == hostName);
 
-        if (!chatExists) {
-          // 3. Create new Chat Entry if not found
-          myChats.add(ChatModel(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            name: host['name'],
-            image: host['image'] ??
-                "https://randomuser.me/api/portraits/lego/1.jpg",
-            role: 'Host',
-            isOnline: true, // Mock status
-            unreadCount: 1, // Welcome message is unread
-            lastMessageText:
-                "Thank you for booking! Let me know if you have questions.",
-            lastMessageTime: DateTime.now(),
-            messages: [
-              {
-                "isMe": false,
-                "text":
-                    "Thank you for booking! Let me know if you have questions.",
-                "time": DateTime.now(),
-                "status": "read"
-              }
-            ],
-          ));
-        }
+      if (!chatExists) {
+        myChats.add(ChatModel(
+          id: booking.id,
+          name: hostName,
+          image: "https://randomuser.me/api/portraits/lego/${myChats.length % 9}.jpg",
+          role: 'Host',
+          isOnline: true, 
+          unreadCount: 1,
+          lastMessageText: "Thank you for booking the ${booking.carName}! Let me know if you have questions.",
+          lastMessageTime: DateTime.now(),
+          messages: [
+            {
+              "isMe": false,
+              "text": "Thank you for booking the ${booking.carName}! Let me know if you have questions.",
+              "time": DateTime.now(),
+              "status": "read"
+            }
+          ],
+        ));
       }
     }
-
-    // Refresh UI
-    if (mounted) setState(() {});
   }
 
   void _markAsRead(ChatModel chat) {
@@ -94,49 +85,64 @@ class _ChatTabState extends State<ChatTab> {
           child: AppTitleText('Messages', fontSize: 28),
         ),
       ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (val) =>
-                  setState(() => _searchQuery = val.toLowerCase()),
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: "Search conversations...",
-                hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                filled: true,
-                fillColor: AppColors.cardColor,
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide:
-                        const BorderSide(color: AppColors.primaryColor)),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-              ),
-            ),
-          ),
+      body: BlocConsumer<BookingCubit, BookingState>(
+        listener: (context, state) {
+          if (state is BookingLoaded) {
+            setState(() {
+              _syncChatsWithBookings(state.bookings);
+            });
+          }
+        },
+        builder: (context, state) {
+          if (state is BookingLoading && myChats.isEmpty) {
+            return const Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
+          }
 
-          // Chat List
-          Expanded(
-            child: displayChats.isEmpty
-                ? _buildEmptyState()
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    itemCount: displayChats.length,
-                    separatorBuilder: (c, i) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      return _buildChatTile(displayChats[index]);
-                    },
+          return Column(
+            children: [
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (val) =>
+                      setState(() => _searchQuery = val.toLowerCase()),
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: "Search conversations...",
+                    hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    filled: true,
+                    fillColor: AppColors.cardColor,
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide:
+                            const BorderSide(color: AppColors.primaryColor)),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   ),
-          ),
-        ],
+                ),
+              ),
+
+              // Chat List
+              Expanded(
+                child: displayChats.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.separated(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        itemCount: displayChats.length,
+                        separatorBuilder: (c, i) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          return _buildChatTile(displayChats[index]);
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
