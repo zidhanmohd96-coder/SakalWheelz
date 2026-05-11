@@ -45,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
-      // 2. CHECK LOGIN STATUS HERE
+      // 2. Check Something
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
