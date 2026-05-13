@@ -7,12 +7,10 @@ import 'package:car_rental_app/core/widgets/app_title_text.dart';
 import 'package:car_rental_app/features/booking_feature/presentation/screens/payment_screen.dart';
 import 'package:car_rental_app/features/booking_feature/data/models/booking_model.dart'
     as models;
-import 'package:car_rental_app/features/booking_feature/presentation/bloc/booking_cubit.dart';
 import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class BookingScreen extends StatefulWidget {

@@ -1,6 +1,5 @@
 import 'package:car_rental_app/core/theme/colors.dart';
 import 'package:car_rental_app/core/theme/dimens.dart';
-import 'package:car_rental_app/core/widgets/app_button.dart';
 import 'package:car_rental_app/core/widgets/app_scaffold.dart';
 import 'package:car_rental_app/core/widgets/app_title_text.dart';
 import 'package:car_rental_app/features/booking_feature/data/models/booking_model.dart';
@@ -52,22 +51,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
               decoration: BoxDecoration(
                 color: AppColors.cardColor,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
+                border:
+                    Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
               ),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Total Amount", style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      Text("\$${widget.booking.totalPrice.toStringAsFixed(2)}", 
-                        style: const TextStyle(color: AppColors.primaryColor, fontSize: 28, fontWeight: FontWeight.bold)),
+                      const Text("Total Amount",
+                          style: TextStyle(color: Colors.grey, fontSize: 16)),
+                      Text("\$${widget.booking.totalPrice.toStringAsFixed(2)}",
+                          style: const TextStyle(
+                              color: AppColors.primaryColor,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const Divider(color: Colors.white10, height: 32),
                   _buildSummaryRow("Vehicle", widget.booking.carName),
                   const SizedBox(height: 8),
-                  _buildSummaryRow("Rental Days", "${widget.booking.rentalDays} Days"),
+                  _buildSummaryRow(
+                      "Rental Days", "${widget.booking.rentalDays} Days"),
                   if (widget.booking.hasDriver) ...[
                     const SizedBox(height: 8),
                     _buildSummaryRow("Driver Status", "Included"),
@@ -105,19 +110,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ],
 
             const SizedBox(height: 40),
-            
+
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: _isProcessing ? null : _processPayment,
                 child: _isProcessing
-                    ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text("Pay Now", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2))
+                    : const Text("Pay Now",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: 40),
@@ -132,7 +146,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: const TextStyle(color: Colors.grey)),
-        Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        Text(value,
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -144,16 +160,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryColor.withOpacity(0.1) : AppColors.cardColor,
+          color: isSelected
+              ? AppColors.primaryColor.withOpacity(0.1)
+              : AppColors.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isSelected ? AppColors.primaryColor : Colors.white10, width: 2),
+          border: Border.all(
+              color: isSelected ? AppColors.primaryColor : Colors.white10,
+              width: 2),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? AppColors.primaryColor : Colors.white, size: 28),
+            Icon(icon,
+                color: isSelected ? AppColors.primaryColor : Colors.white,
+                size: 28),
             const SizedBox(width: 16),
-            Expanded(child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600))),
-            if (isSelected) const Icon(Icons.check_circle, color: AppColors.primaryColor),
+            Expanded(
+                child: Text(title,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600))),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: AppColors.primaryColor),
           ],
         ),
       ),
@@ -164,7 +192,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+        Text(label,
+            style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -189,7 +218,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> _processPayment() async {
     setState(() => _isProcessing = true);
-    
+
     // Simulate payment gateway delay
     await Future.delayed(const Duration(seconds: 2));
 
@@ -220,7 +249,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
     } else {
       setState(() => _isProcessing = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to create booking!")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to create booking!")));
     }
   }
 }

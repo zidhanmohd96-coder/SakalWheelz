@@ -5,7 +5,6 @@ import 'package:car_rental_app/features/driver_feature/presentation/screens/driv
 import 'package:car_rental_app/features/home_feature/presentation/widgets/car_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:car_rental_app/features/home_feature/data/data_source/local/sample_data.dart';
 import 'package:car_rental_app/features/car_feature/presentation/bloc/car_cubit.dart';
 
 enum SearchType { vehicle, driver }
